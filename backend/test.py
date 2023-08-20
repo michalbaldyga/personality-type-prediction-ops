@@ -14,7 +14,7 @@ def test_model() -> float:
     """Calculate model accuracy on the test dataset."""
 
     # Read test dataset
-    df = pd.read_csv('../datasets/tweets_test.csv', delimiter='|')
+    df = pd.read_csv('../datasets/dataset_test.csv', delimiter='|')
     df = df.dropna()  # Remove all None rows
 
     # Initialize accuracy variables
@@ -30,9 +30,8 @@ def test_model() -> float:
         guess = predict(text)[0]['label']
 
         # Check if the predicted label matches the true label
-        correct_letters = 0
         if guess == label:
-            correct_letters += 1
+            correct += 1
 
     # Calculate accuracy as the ratio of correct predictions to total examples
     accuracy = correct / total
