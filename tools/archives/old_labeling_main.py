@@ -3,7 +3,7 @@ import csv
 
 from clear_tweets import clear_data
 
-INPUT_DIR = '../labeling/input_data'
+INPUT_DIR = 'input_data'
 TRAIN_FILE_PATH = 'output_data/training_data.csv'
 TEST_FILE_PATH = 'output_data/testing_data.csv'
 

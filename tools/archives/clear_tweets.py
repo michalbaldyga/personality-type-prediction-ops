@@ -33,7 +33,7 @@ def clear_data(text):
     text = re.sub(r'\*', '', text, re.DOTALL, flags=re.IGNORECASE)
 
     # Removing Link:
-    text = re.sub(r'Link:', '.', text, re.DOTALL, flags=re.IGNORECASE)
+    text = re.sub(r'Link:', '../labeling', text, re.DOTALL, flags=re.IGNORECASE)
 
     # Removing (See ...)
     text = re.sub(r'\(See[^)]*\)', '', text, flags=re.IGNORECASE)
@@ -83,9 +83,9 @@ def clear_data(text):
     # 2) * * * * *
     text = re.sub(r'\*\s[\*\s]*\*\s', '', text)
     # 3) . . . . .
-    text = re.sub(r'\.\s[\.\s]*\.\s', '.', text)
+    text = re.sub(r'\.\s[\.\s]*\.\s', '../labeling', text)
     # 4) ...
-    text = re.sub(r"\.\.\.", "", text)
+    text = re.sub(r"../labeling", "", text)
 
     # Replacing all multiple white spaces with single white space
     text = re.sub(r'\s+', ' ', text)
