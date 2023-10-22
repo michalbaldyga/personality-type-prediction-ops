@@ -1,5 +1,6 @@
 import os
 
+
 from transformers import pipeline
 from typing import Optional, List
 
