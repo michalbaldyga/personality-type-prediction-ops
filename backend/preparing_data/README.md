@@ -10,12 +10,12 @@ Two regex patterns are defined to validate the OPS codes and identify any incorr
 The script includes several methods to extract different "coins" from the OPS codes:
 - `get_human_needs_coins`: Extracts **three coins** related to human needs (Observer, Decider, Preferences) based on the observing and deciding functions in the OPS code.
 - `get_letter_coins`: Retrieves **two coins** representing the observer and decider traits.
-- `get_animal_coins`: Determines **three coins** (Energy Animal, Info Animal, Dominant Animal) based on the animal representations in the OPS code.
+- `get_animal_coins`: Determines **four coins** (Energy Animal, Info Animal, Dominant Animal, Introverted vs Extraverted) based on the animal representations in the OPS code.
 - `get_sexual_modality_coins`: Extracts **two coins** related to the sensory and extraverted decider modalities.
 Each of these methods replaces unknown or unspecified values ('?', '??', 'x', 'xx') with `None`.
 
 ## Total Coins
-In total, the script identifies **ten unique coins** that categorize different aspects of the OPS codes.
+In total, the script identifies **eleven unique coins** that categorize different aspects of the OPS codes.
 
 ## Main Functions
 - `clean_ops_data`: Cleans the OPS data by removing annotations and filtering for valid OPS codes.
