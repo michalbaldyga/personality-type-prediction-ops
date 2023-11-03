@@ -91,17 +91,21 @@ def get_animal_coins(first_two_animals, third_animal, fourth_animal) -> dict:
     energy = None
     info = None
     dominant = None
+    intro_extro = None
 
     if first_animal and second_animal and fourth_animal:
         energy = "Sleep" if first_animal == "S" or second_animal == "S" else "Play"
         info = "Consume" if first_animal == "C" or second_animal == "C" else "Blast"
 
+        # optional
         dominant = "Info" if fourth_animal in ["S", "P"] else "Energy"
+        intro_extro = "Extro" if fourth_animal in ["C", "S"] else "Intro"
 
     return {
         'Energy Animal': energy,
         'Info Animal': info,
         'Dominant Animal': dominant,
+        'Introverted vs Extraverted': intro_extro
     }
 
 
