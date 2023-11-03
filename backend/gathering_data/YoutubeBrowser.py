@@ -73,7 +73,7 @@ class YoutubeBrowser:
 
 
 ytb = YoutubeBrowser()
-with open('records.csv') as records_file:
+with open('../../static/csv/records.csv') as records_file:
     output = []
     lines = records_file.readlines()
 
