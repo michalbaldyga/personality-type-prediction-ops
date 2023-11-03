@@ -25,45 +25,4 @@ In total, the script identifies **ten unique coins** that categorize different a
 ## Usage
 To use this script, ensure that the CSV file with OPS codes is placed in the appropriate directory (`static/csv/records_update.csv` relative to the script's location). Run the script, and it will generate new CSV files with the **cleaned** and **processed** data.
 
-## TODO
-- check wrong animals
-- retrieve ops code from coins ( reverse method **process_ops_code_to_coins_in_csv**)
-## Code Descriptions with Comments
-Below are code segments that are currently commented out but were considered in earlier versions of the script:
 
-```python
-# Code for determining temperaments, which was considered but is not currently in use.
-# temperaments = {
-#     ('S', 'T'): 'ST',
-#     ('S', 'F'): 'SF',
-#     ('N', 'T'): 'NT',
-#     ('N', 'F'): 'NF'
-# }
-# temperament = temperaments.get((observing, deciding))
-
-# Code for determining dominance in information or energy, not used in the current version.
-# def determine_info_energy_dominance(third_animal, fourth_animal):
-#     energy_animals = {'B', 'C'}
-#     info_animals = {'S', 'P'}
-#     animals_set = {replace_question_mark(third_animal), replace_question_mark(fourth_animal)}
-#     if animals_set & energy_animals:
-#         return 'Energy Dominant'
-#     elif animals_set & info_animals:
-#         return 'Info Dominant'
-#     else:
-#         return None
-
-# Humorous comment acknowledging the redundancy of replacing a third animal, which isn't used.
-# third_animal = replace_question_mark(third_animal) lol it is not used ( stupid system XD)
-
-# Introversion/Extroversion assignment based on the fourth animal, not currently implemented.
-# introversion_extroversion = "Introversion" if fourth_animal in ["P", "B"] else "Extroversion"
-
-# Learning style determination logic based on the modality, not active in the current script.
-# learning_styles = {
-#     ('M', 'M'): 'Kinesthetic',
-#     ('M', 'F'): 'Audio',
-#     ('F', 'M'): 'Tester',
-#     ('F', 'F'): 'Visual',
-# }
-# learning_style = learning_styles.get((sensory, decider))
