@@ -52,7 +52,7 @@ def get_human_needs_coins(observing_function, deciding_function) -> dict:
     }
 
 
-def get_letter_coins(observing, deciding) -> dict:
+def get_letter_coins(cognitive_function1, cognitive_function2) -> dict:
     """
     Extract the letter-based coins from the OPS code.
 
@@ -63,8 +63,14 @@ def get_letter_coins(observing, deciding) -> dict:
     Returns:
     dict: A dictionary with keys 'Observer' and 'Decider' representing the letter coins.
     """
-    observing = replace_question_mark(observing)
-    deciding = replace_question_mark(deciding)
+    cognitive_function1 = replace_question_mark(cognitive_function1)
+    cognitive_function2 = replace_question_mark(cognitive_function2)
+
+    sensual = ["Si", "Se"]
+    thinking = ["Ti", "Te"]
+
+    observing = "S" if (cognitive_function1 in sensual or cognitive_function2 in sensual) else "N"
+    deciding = "T" if (cognitive_function1 in thinking or cognitive_function2 in thinking) else "F"
 
     return {
         'Observer': observing,
