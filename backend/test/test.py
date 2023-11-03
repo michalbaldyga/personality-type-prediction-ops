@@ -1,20 +1,20 @@
 import os
 import pandas as pd
 
-from predict import predict
+from backend.predict.predict import predict
 from tqdm import tqdm
 
 
 def _get_path_to_model() -> str:
     path = os.path.join(os.path.dirname(__file__), 'model')
-    return path if os.path.isdir(path) else os.path.join(os.path.dirname(__file__), 'release', 'model')
+    return path if os.path.isdir(path) else os.path.join(os.path.dirname(__file__), '../release', 'model')
 
 
 def test_model() -> float:
     """Calculate model accuracy on the test dataset."""
 
     # Read test dataset
-    df = pd.read_csv('../datasets/dataset_test.csv', delimiter='|')
+    df = pd.read_csv('../../datasets/dataset_test.csv', delimiter='|')
     df = df.dropna()  # Remove all None rows
 
     # Initialize accuracy variables

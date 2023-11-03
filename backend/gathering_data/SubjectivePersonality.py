@@ -5,9 +5,10 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from tqdm import tqdm
 from math import ceil
-from image_downloader import download_image
+import requests
 
 ELEMENTS_ON_PAGE = 50
+DOWNLOAD_DIR = "../../static/img"
 
 
 class SubjectivePersonality:
@@ -42,7 +43,7 @@ class SubjectivePersonality:
                     image_url = self.__get_image_url(image.get_attribute("outerHTML"))
                     name, ops = self.__get_name_and_ops(text.text, False)
                     name = name.replace('/', ' or ')
-                    download_image(name, image_url)
+                    self.download_image(name, image_url)
                 results.append({'name': name, 'ops': ops, 'image_url': image_url})
 
             next_page_button.click()
@@ -105,13 +106,23 @@ class SubjectivePersonality:
 
          :param records: list of records to be saved
          """
-        csv_file = 'records.csv'
+        csv_file = '../../static/csv/records.csv'
         with open(csv_file, 'w', newline='', encoding='utf-8') as file:
             csv_writer = csv.DictWriter(file, fieldnames=['name', 'ops', 'image_url'])
             csv_writer.writeheader()
             for record in records:
                 csv_writer.writerow(record)
         print(f'Results saved in {csv_file}.')
+
+    @staticmethod
+    def download_image(name: str, url: str) -> None:
+        """ Get persons from page with type and link to interview
+        :param name: name of person from the image
+        :param url: url of the image
+        """
+        data = requests.get(url).content
+        with open(f'{DOWNLOAD_DIR}\\{name}.jpg', 'wb') as f:
+            f.write(data)
 
 
 sp = SubjectivePersonality()
