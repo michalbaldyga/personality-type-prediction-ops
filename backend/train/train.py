@@ -6,23 +6,14 @@ import numpy as np
 import pandas as pd
 
 MODEL_OUTPUT_DIR = "../release/model"
+COINS_NUMBER = 9
 
 
-def load_dataset_from_csv(path):
+def load_dataset_from_csv(csv_path):
     """Loading dataset from csv file."""
-    df = pd.read_csv(path, delimiter='|')
+    df = pd.read_csv(csv_path, delimiter='|')
     df = pd.DataFrame(df)
-    df = df.dropna()
     return Dataset.from_pandas(df)
-
-
-# Load dataset and labels
-dataset = load_dataset_from_csv("../../datasets/dataset_train.csv")
-dataset = dataset.train_test_split(test_size=0.2)
-labels = ClassLabel(names=['OBSERVER', 'DECIDER'])
-
-# Preprocess
-tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
 
 
 def preprocess_function(batch):
@@ -32,20 +23,46 @@ def preprocess_function(batch):
     return tokenized_batch
 
 
-tokenized_dataset = dataset.map(preprocess_function, batched=True)
-
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding=True)
-
-# Evaluate
-accuracy = evaluate.load("accuracy")
-
-
 def compute_metrics(eval_pred):
     """Function to calculate the accuracy."""
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=1)
     return accuracy.compute(predictions=predictions, references=labels)
 
+
+def calculate_coins_indexes(coin_col):
+    coins_indexes = {}
+    changes_cnt = 0
+    curr_coin = coin_col[0]
+    idx = 0
+    coin_name = 1
+    for coin in coin_col:
+        if coin != curr_coin:
+            curr_coin = coin
+            changes_cnt += 1
+        if changes_cnt == 2:
+            coins_indexes[f"Coin{coin_name}"] = idx
+            coin_name += 1
+            changes_cnt = 0
+        idx += 1
+    coins_indexes[f"Coin{coin_name}"] = idx
+    return coins_indexes
+
+
+# Load dataset and labels
+dataset = load_dataset_from_csv("../../datasets/data_to_train.csv")
+coins_indexes = calculate_coins_indexes(dataset['Coin'])
+
+dataset = dataset.train_test_split(test_size=0.2)
+labels = ClassLabel(names=['OBSERVER', 'DECIDER'])
+
+# Preprocess
+tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+tokenized_dataset = dataset.map(preprocess_function, batched=True)
+data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding=True)
+
+# Evaluate
+accuracy = evaluate.load("accuracy")
 
 # Train
 id2label = {0: "OBSERVER", 1: "DECIDER"}
