@@ -5,8 +5,12 @@ import evaluate
 import numpy as np
 import pandas as pd
 
-MODEL_OUTPUT_DIR = "../release/model"
 COINS_NUMBER = 9
+VALUES_PER_COIN = 2
+COINS = [["OO", "DD"], ["Oi", "Oe"], ["Di", "De"],
+         ["S", "N"], ["F", "T"], ["Sleep", "Play"],
+         ["Consume", "Blast"], ["Fem-S", "Mas-S"],
+         ["Fem-De", "Mas-De"]]
 
 
 def load_dataset_from_csv(csv_path):
@@ -19,7 +23,7 @@ def load_dataset_from_csv(csv_path):
 def preprocess_function(batch):
     """Preprocessing function to tokenize text and sequences."""
     tokenized_batch = tokenizer(batch['text'], truncation=True)
-    tokenized_batch['label'] = labels.str2int(batch['label'])
+    tokenized_batch['labels'] = labels.str2int(batch['labels'])
     return tokenized_batch
 
 
@@ -31,69 +35,70 @@ def compute_metrics(eval_pred):
 
 
 def calculate_coins_indexes(coin_col):
-    coins_indexes = {}
+    coins_indexes = []
     changes_cnt = 0
     curr_coin = coin_col[0]
-    idx = 0
-    coin_name = 1
-    for coin in coin_col:
+    for idx, coin in enumerate(coin_col):
         if coin != curr_coin:
             curr_coin = coin
             changes_cnt += 1
-        if changes_cnt == 2:
-            coins_indexes[f"Coin{coin_name}"] = idx
-            coin_name += 1
+        if changes_cnt == VALUES_PER_COIN:
+            coins_indexes.append(idx)
             changes_cnt = 0
-        idx += 1
-    coins_indexes[f"Coin{coin_name}"] = idx
+    coins_indexes.append(idx + 1)
     return coins_indexes
 
 
-# Load dataset and labels
+# Load dataset
 dataset = load_dataset_from_csv("../../datasets/data_to_train.csv")
-coins_indexes = calculate_coins_indexes(dataset['Coin'])
+coins_indexes = [0] + calculate_coins_indexes(dataset['labels'])
 
-dataset = dataset.train_test_split(test_size=0.2)
-labels = ClassLabel(names=['OBSERVER', 'DECIDER'])
+for (coin, idx) in zip(COINS, range(0, COINS_NUMBER)):
 
-# Preprocess
-tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
-tokenized_dataset = dataset.map(preprocess_function, batched=True)
-data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding=True)
+    # Load current batch and labels
+    dataset_batch = Dataset.from_dict(dataset[coins_indexes[idx]:coins_indexes[idx+1]])
+    dataset_batch = dataset_batch.train_test_split(test_size=0.2)
 
-# Evaluate
-accuracy = evaluate.load("accuracy")
+    labels = ClassLabel(names=[coin[0], coin[1]])
+    id2label = {0: coin[0], 1: coin[1]}
+    label2id = {coin[0]: 0, coin[1]: 1}
 
-# Train
-id2label = {0: "OBSERVER", 1: "DECIDER"}
-label2id = {"OBSERVER": 0, "DECIDER": 1}
+    # Preprocess
+    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+    tokenized_dataset = dataset_batch.map(preprocess_function, batched=True)
+    data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding=True)
 
-model = AutoModelForSequenceClassification.from_pretrained(
-    "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id
-)
+    # Evaluation metric
+    accuracy = evaluate.load("accuracy")
 
-training_args = TrainingArguments(
-    output_dir=MODEL_OUTPUT_DIR,
-    learning_rate=2e-5,
-    per_device_train_batch_size=16,
-    per_device_eval_batch_size=16,
-    num_train_epochs=5,
-    weight_decay=0.01,
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-    load_best_model_at_end=True,
-    push_to_hub=False,
-)
+    # Train
+    model_output_dir = f"../release/model_{idx}"
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id
+    )
 
-trainer = Trainer(
-    model=model,
-    args=training_args,
-    train_dataset=tokenized_dataset["train"],
-    eval_dataset=tokenized_dataset["test"],
-    tokenizer=tokenizer,
-    data_collator=data_collator,
-    compute_metrics=compute_metrics,
-)
+    training_args = TrainingArguments(
+        output_dir=model_output_dir,
+        learning_rate=2e-5,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
+        num_train_epochs=5,
+        weight_decay=0.01,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+        load_best_model_at_end=True,
+        push_to_hub=False,
+    )
 
-trainer.train()
-trainer.save_model(MODEL_OUTPUT_DIR)
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=tokenized_dataset["train"],
+        eval_dataset=tokenized_dataset["test"],
+        tokenizer=tokenizer,
+        data_collator=data_collator,
+        compute_metrics=compute_metrics,
+    )
+
+    trainer.train()
+    trainer.save_model(model_output_dir)
