@@ -17,9 +17,9 @@ def load_dataset_from_csv(path):
 
 
 # Load dataset and labels
-dataset = load_dataset_from_csv("../../datasets/dataset_train.csv")
+dataset = load_dataset_from_csv("../../datasets/test.csv")
 dataset = dataset.train_test_split(test_size=0.2)
-labels = ClassLabel(names=['OBSERVER', 'DECIDER'])
+labels = ClassLabel(names=['OO', 'DD'])
 
 # Preprocess
 tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
@@ -48,8 +48,8 @@ def compute_metrics(eval_pred):
 
 
 # Train
-id2label = {0: "OBSERVER", 1: "DECIDER"}
-label2id = {"OBSERVER": 0, "DECIDER": 1}
+id2label = {0: "OO", 1: "DD"}
+label2id = {"OO": 0, "DD": 1}
 
 model = AutoModelForSequenceClassification.from_pretrained(
     "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id
@@ -60,7 +60,7 @@ training_args = TrainingArguments(
     learning_rate=2e-5,
     per_device_train_batch_size=16,
     per_device_eval_batch_size=16,
-    num_train_epochs=5,
+    num_train_epochs=2,
     weight_decay=0.01,
     evaluation_strategy="epoch",
     save_strategy="epoch",
