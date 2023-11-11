@@ -23,7 +23,7 @@ def load_dataset_from_csv(csv_path):
 def preprocess_function(batch):
     """Preprocessing function to tokenize text and sequences."""
     tokenized_batch = tokenizer(batch['text'], truncation=True)
-    tokenized_batch['labels'] = labels.str2int(batch['labels'])
+    tokenized_batch['label'] = labels.str2int(batch['label'])
     return tokenized_batch
 
 
@@ -47,11 +47,11 @@ def calculate_coins_indexes(coin_col):
             changes_cnt = 0
     coins_indexes.append(idx + 1)
     return coins_indexes
-
+ 
 
 # Load dataset
-dataset = load_dataset_from_csv("../../datasets/data_to_train.csv")
-coins_indexes = [0] + calculate_coins_indexes(dataset['labels'])
+dataset = load_dataset_from_csv("../../datasets/data_to_train_test0811.csv")
+coins_indexes = [0] + calculate_coins_indexes(dataset['label'])
 
 for (coin, idx) in zip(COINS, range(0, COINS_NUMBER)):
 
@@ -82,7 +82,7 @@ for (coin, idx) in zip(COINS, range(0, COINS_NUMBER)):
         learning_rate=2e-5,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
-        num_train_epochs=2,
+        num_train_epochs=1,
         weight_decay=0.01,
         evaluation_strategy="epoch",
         save_strategy="epoch",
@@ -101,4 +101,8 @@ for (coin, idx) in zip(COINS, range(0, COINS_NUMBER)):
     )
 
     trainer.train()
+    print(f"Training done for {coin}")
     trainer.save_model(model_output_dir)
+    print("Model saved")
+    trainer.evaluate()
+    print("Evaluation done")
