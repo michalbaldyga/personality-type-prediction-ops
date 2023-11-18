@@ -78,21 +78,3 @@ class YoutubeBrowser:
                 return True
 
         return False
-
-    def __get_video_duration(self, content):
-        duration_tag = re.findall('meta itemprop="duration" content="PT[0-9A-Z]+', content)
-        duration = duration_tag[0].split('"')[-1]
-        return self.__convert_duration_to_minutes(duration)
-
-    @staticmethod
-    def __convert_duration_to_minutes(duration):
-        hours_match = re.search(r'(\d+)H', duration)
-        minutes_match = re.search(r'(\d+)M', duration)
-
-        # Initialize variables for each component (hours, minutes)
-        hours = int(hours_match.group(1)) if hours_match else 0
-        minutes = int(minutes_match.group(1)) if minutes_match else 0
-
-        # Calculate the total duration in minutes
-        total_minutes = (hours * 60) + minutes
-        return total_minutes

@@ -1,5 +1,3 @@
-import csv
-
 from backend.gathering_data.YoutubeBrowser import YoutubeBrowser
 
 browser = YoutubeBrowser()
@@ -7,14 +5,12 @@ CSV_DIR = '../../static/csv/'
 
 
 def get_interviews(records_file_path):
-    x = 0
     results = [["name", "ops", "interview_link"]]
 
     with open(records_file_path) as record_file:
-        lines = record_file.readlines()[1:100]
+        lines = record_file.readlines()[1:]
 
         for line in lines:
-            x += 1
             cols = line.split(';') if ';' in line else line.split(',')
             name = cols[0]
             is_member = int(cols[4])
@@ -25,8 +21,6 @@ def get_interviews(records_file_path):
 
             if interview_link is not None:
                 results.append([name, cols[1], interview_link])
-
-            print(f"{x}: {interview_link}")
 
     with open(f"{CSV_DIR}interview_links.csv", "w", newline='') as output_file:
         output_file.writelines(f"{';'.join(line)}\n" for line in results[:-1])
