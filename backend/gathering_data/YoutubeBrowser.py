@@ -31,7 +31,9 @@ class YoutubeBrowser:
             u = url.split("\\")
             unique_urls.add(u[0])
 
-        for video_id in list(unique_urls)[:20]:
+        index_limit = min(len(unique_urls), 30)
+
+        for video_id in list(unique_urls)[:index_limit]:
             video_url = f"{self.youtube_url}{video_id}"
             if self.__is_interview_proper(video_url, person):
                 return video_url
@@ -44,10 +46,12 @@ class YoutubeBrowser:
 
         title = self.__get_video_title(content)
 
-        result = self.__is_name_in_title(person.lower(), title.lower())
-        print(f"{result}: {person} - {title}")
+        if not self.__is_name_in_title(person, title):
+            return False
+        if not self.__is_keyword_in_title(title):
+            return False
 
-        return result
+        return True
 
     @staticmethod
     def __get_video_title(content):
@@ -57,9 +61,21 @@ class YoutubeBrowser:
 
     @staticmethod
     def __is_name_in_title(name, title):
-        parts = name.split()
-        if parts[0] in title and parts[-1] in title:
+        parts = name.lower().split()
+        lowered_title = title.lower()
+        if parts[0] in lowered_title and parts[-1] in lowered_title:
             return True
+
+        return False
+
+    @staticmethod
+    def __is_keyword_in_title(title):
+        lowered_title = title.lower()
+        keywords = ['interview', 'podcast']
+
+        for keyword in keywords:
+            if keyword in lowered_title:
+                return True
 
         return False
 
