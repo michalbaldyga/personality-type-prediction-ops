@@ -71,7 +71,7 @@ class YoutubeBrowser:
     @staticmethod
     def __is_keyword_in_title(title):
         lowered_title = title.lower()
-        keywords = ['interview', 'podcast']
+        keywords = ['interview', 'podcast', 'conversation', 'discussion']
 
         for keyword in keywords:
             if keyword in lowered_title:
