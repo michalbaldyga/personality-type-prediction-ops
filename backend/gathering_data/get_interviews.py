@@ -11,7 +11,7 @@ def get_interviews(records_file_path):
 
     lines = []
     with open(records_file_path) as record_file:
-        lines = record_file.readlines()[1:10]
+        lines = record_file.readlines()[1:]
 
     if len(lines) > 0:
         with open(f"{CSV_DIR}/interview_links.csv", mode='w', newline='') as file:
