@@ -1,30 +1,36 @@
 from backend.gathering_data.YoutubeBrowser import YoutubeBrowser
+import csv
 
 browser = YoutubeBrowser()
 CSV_DIR = '../../static/csv/'
 
 
 def get_interviews(records_file_path):
-    results = [["name", "ops", "interview_link"]]
+    first_row = ["name", "ops", "interview_link"]
+    x = 0
 
+    lines = []
     with open(records_file_path) as record_file:
-        lines = record_file.readlines()[1:]
+        lines = record_file.readlines()[1:10]
 
-        for line in lines:
-            cols = line.split(';') if ';' in line else line.split(',')
-            name = cols[0]
-            is_member = int(cols[4])
+    if len(lines) > 0:
+        with open(f"{CSV_DIR}/interview_links.csv", mode='w', newline='') as file:
+            csv_writer = csv.writer(file, delimiter=';')
+            csv_writer.writerow(first_row)
 
-            yt_link = cols[5].replace('\n', '')
+            for line in lines:
+                cols = line.split(';') if ';' in line else line.split(',')
+                name = cols[0]
+                is_member = int(cols[4])
 
-            interview_link = get_interview_link(name, yt_link, is_member)
+                yt_link = cols[5].replace('\n', '')
 
-            if interview_link is not None:
-                results.append([name, cols[1], interview_link])
+                interview_link = get_interview_link(name, yt_link, is_member)
 
-    with open(f"{CSV_DIR}interview_links.csv", "w", newline='') as output_file:
-        output_file.writelines(f"{';'.join(line)}\n" for line in results[:-1])
-        output_file.write(';'.join(results[-1]))
+                if interview_link is not None:
+                    csv_writer.writerow([name, cols[1], interview_link])
+                    print(f"{x}: {interview_link}")
+                    x += 1
 
 
 def get_interview_link(name, link, is_member):
