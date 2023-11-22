@@ -7,7 +7,7 @@ CSV_DIR = '../../static/csv/'
 
 def get_interviews(records_file_path):
     first_row = ["name", "ops", "interview_link"]
-    x = 0
+    x = 1
 
     lines = []
     with open(records_file_path) as record_file:
@@ -19,7 +19,7 @@ def get_interviews(records_file_path):
             csv_writer.writerow(first_row)
 
             for line in lines:
-                cols = line.split(';') if ';' in line else line.split(',')
+                cols = line.split(',')
                 name = cols[0]
                 is_member = int(cols[4])
 
