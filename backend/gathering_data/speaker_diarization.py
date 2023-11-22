@@ -15,11 +15,11 @@ PREFERRED_QUALITY = "192"
 MODEL_PRETRAINED = "pyannote/speaker-diarization-3.0"
 WHISPER_VERSION = "base"
 LANGUAGE = "en"
-USE_AUTH_TOKEN = ""
+USE_AUTH_TOKEN = "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"
 RAW_AUDIO_FILE_DIR = os.path.join("files", "raw_audio.wav")
 CLEAN_AUDIO_FILE_DIR = os.path.join("files", "clean_audio.wav")
-INPUT_CSV_FILE_DIR = os.path.join("files", "input.csv")
-OUTPUT_CSV_FILE_DIR = os.path.join("files", "output.csv")
+INPUT_CSV_FILE_DIR = os.path.join("files", "interview_links.csv")
+OUTPUT_CSV_FILE_DIR = os.path.join("files", "transcripts.csv")
 
 
 def download_audio(url, output_path):
@@ -125,7 +125,7 @@ def main():
     df = pd.read_csv(INPUT_CSV_FILE_DIR, delimiter=";")
 
     for _, row in df.iterrows():
-        name, youtube_link = row["name"], row["youtube_link"]
+        name, youtube_link = row["name"], row["interview_link"]
 
         # Apply diarization
         diarization_results = apply_diarization(youtube_link, RAW_AUDIO_FILE_DIR, diarization_model)
