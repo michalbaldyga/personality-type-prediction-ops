@@ -7,11 +7,13 @@ CSV_DIR = '../../static/csv/'
 
 def get_interviews(records_file_path):
     first_row = ["name", "ops", "interview_link"]
-    x = 1
+    x = 796
 
     lines = []
     with open(records_file_path) as record_file:
-        lines = record_file.readlines()[1:]
+        lines = record_file.readlines()[796:]
+
+    record_file.close()
 
     if len(lines) > 0:
         with open(f"{CSV_DIR}/interview_links.csv", mode='w', newline='') as file:
@@ -26,11 +28,11 @@ def get_interviews(records_file_path):
                 yt_link = cols[5].replace('\n', '')
 
                 interview_link = get_interview_link(name, yt_link, is_member)
+                print(f"{x}: {interview_link}")
+                x += 1
 
                 if interview_link is not None:
                     csv_writer.writerow([name, cols[1], interview_link])
-                    print(f"{x}: {interview_link}")
-                    x += 1
 
 
 def get_interview_link(name, link, is_member):
