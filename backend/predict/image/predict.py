@@ -36,6 +36,14 @@ ops_data = pd.read_csv(RECORDS_CLEANED_PROCESSED_CSV)
 
 # Function to create and compile a model
 def create_model():
+    """Create and compile a ResNet50 model for binary classification.
+
+    The function initializes a ResNet50 model, adds custom top layers, and compiles it
+    with RMSprop optimizer and binary crossentropy loss function.
+
+    Returns:
+        A compiled Keras Model instance.
+    """
     base_model = ResNet50(weights="imagenet", include_top=False)
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
