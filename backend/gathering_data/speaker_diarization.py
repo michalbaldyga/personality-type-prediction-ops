@@ -145,9 +145,10 @@ def main():
         # Removal overlapping intervals for the selected speaker
         max_intervals = list(speaker_timestamps[max_speaker])
         remove_overlapping_intervals(speaker_timestamps, max_speaker, max_intervals)
+        sorted_intervals = sorted(max_intervals, key=lambda x: x[0])
 
         # Segment out the parts of the audio where the selected speaker is talking
-        segments = [audio[start:end] for start, end in max_intervals]
+        segments = [audio[start:end] for start, end in sorted_intervals]
 
         # Combine segments or handle them individually
         combined = sum(segments[1:], segments[0])
