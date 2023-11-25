@@ -1,28 +1,47 @@
 # OPS Code Processing
-This Python script is designed to parse and process Objective Personality System (OPS) codes from a CSV file. The script extracts various "coins," which are categories of traits represented by the OPS codes, and then saves the enhanced data back into CSV format.
 
-## Regex Patterns
-Two regex patterns are defined to validate the OPS codes and identify any incorrect cognitive functions that may be present in the codes:
-- `OPS_CODE_FORMAT`: Validates the format of the OPS code.
-- `WRONG_COGNITIVE_FORMAT`: Identifies incorrect cognitive functions within the OPS codes.
+This Python script specializes in parsing and processing Objective Personality System (OPS) codes from a CSV file. It extracts various "coins" representing different personality traits encoded within the OPS codes and saves the enhanced data in CSV format.
 
-## Coin Extraction Methods
-The script includes several methods to extract different "coins" from the OPS codes:
-- `get_human_needs_coins`: Extracts **three coins** related to human needs (Observer, Decider, Preferences) based on the observing and deciding functions in the OPS code.
-- `get_letter_coins`: Retrieves **two coins** representing the observer and decider traits.
-- `get_animal_coins`: Determines **four coins** (Energy Animal, Info Animal, Dominant Animal, Introverted vs Extraverted) based on the animal representations in the OPS code.
-- `get_sexual_modality_coins`: Extracts **two coins** related to the sensory and extraverted decider modalities.
-Each of these methods replaces unknown or unspecified values ('?', '??', 'x', 'xx') with `None`.
+## Features Overview
 
-## Total Coins
-In total, the script identifies **eleven unique coins** that categorize different aspects of the OPS codes.
+- **Regex Patterns**: Utilizes regex patterns for validating OPS code formats and identifying incorrect cognitive functions.
+- **Coin Extraction**: Implements multiple methods to extract detailed personality traits from OPS codes.
+- **Data Cleaning**: Includes robust data cleaning techniques to ensure data integrity and accuracy.
+- **Data Processing**: Efficiently processes OPS codes and integrates the extracted coins into the dataset.
 
-## Main Functions
-- `clean_ops_data`: Cleans the OPS data by removing annotations and filtering for valid OPS codes.
-- `process_ops_code_to_coins_in_csv`: Processes the cleaned OPS codes and adds the extracted coins to the CSV.
-- `main`: The entry point of the script that orchestrates the cleaning and processing of the OPS data.
+## Detailed Method Descriptions
+
+### Data Cleaning (`clean_ops_data`)
+
+- **Purpose**: Cleans OPS data in the CSV file by removing extraneous annotations and standardizing OPS code formats.
+- **Implementation**: 
+   - Removes annotations using regex patterns.
+   - Replaces placeholder characters ('?', '??') with 'x'.
+   - Converts uppercase 'X' to lowercase.
+   - Strips parentheses and other non-essential characters.
+- **Output**: A cleaned CSV file, ready for further processing.
+
+### Coin Extraction Methods
+
+- `get_human_needs_coins`: Extracts three coins (Observer, Decider, Preferences) from the observing and deciding functions in the OPS code.
+- `get_letter_coins`: Retrieves two coins (Observer, Decider) based on cognitive functions.
+- `get_animal_coins`: Determines four coins (Energy Animal, Info Animal, Dominant Animal, Introverted vs Extraverted) from animal symbols in the OPS code.
+- `get_sexual_modality_coins`: Extracts two coins (Sensory, Extraverted Decider) from the modality part of the OPS code.
+- **Commonality**: Each method replaces unknown ('x', 'xx') or unspecified values with `None` to maintain data consistency.
+
+### Data Processing (`process_ops_code_to_coins_in_csv`)
+
+- **Purpose**: Processes OPS codes in the cleaned CSV file and enriches the dataset with the extracted coins.
+- **Implementation**:
+  - Parses each OPS code in the dataset.
+  - Extracts coins using the defined methods.
+  - Adds new columns to the dataset for each coin.
+  - Handles errors and inconsistencies in OPS codes gracefully.
+- **Output**: A processed CSV file with enriched data, including extracted coins for each OPS code.
 
 ## Usage
-To use this script, ensure that the CSV file with OPS codes is placed in the appropriate directory (`static/csv/records_update.csv` relative to the script's location). Run the script, and it will generate new CSV files with the **cleaned** and **processed** data.
 
+1. Ensure the CSV file with OPS codes is located in the appropriate directory (`static/csv/records.csv`).
+2. Run the script to generate new CSV files with cleaned and processed data.
 
+This script is a valuable tool for researchers and analysts working with OPS data, offering a comprehensive way to extract and analyze personality traits encoded within OPS codes.
