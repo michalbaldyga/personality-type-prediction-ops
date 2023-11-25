@@ -1,4 +1,5 @@
 import os
+from typing import Optional, Dict
 
 import pandas as pd
 
@@ -10,27 +11,21 @@ FIRST = 0
 SECOND = 1
 
 
-def replace_x_to_none(value):
+def replace_x_to_none(value: str) -> Optional[str]:
     """Replace 'x' or 'xx' with None in OPS code values.
 
-    Args:
-        value (str): A string representing a part of the OPS code.
-
-    Returns:
-        str or None: None if value is a placeholder, else the input value.
+    :param value: str, a string representing a part of the OPS code
+    :return: Optional[str], None if value is a placeholder, else the input value
     """
     return None if value in {"x", "xx"} else value
 
 
-def get_human_needs_coins(observing_function, deciding_function) -> dict:
+def get_human_needs_coins(observing_function: str, deciding_function: str) -> Dict[str, Optional[str]]:
     """Determine human needs coins from OPS code observing and deciding functions.
 
-    Args:
-        observing_function (str): The observing function part of the OPS code.
-        deciding_function (str): The deciding function part of the OPS code.
-
-    Returns:
-        dict: Dictionary with keys 'Observer', 'Decider', and 'Preferences'.
+    :param observing_function: str, the observing function part of the OPS code
+    :param deciding_function: str, the deciding function part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Observer', 'Decider', and 'Preferences'
     """
     observing_function = replace_x_to_none(observing_function)
     deciding_function = replace_x_to_none(deciding_function)
@@ -46,15 +41,12 @@ def get_human_needs_coins(observing_function, deciding_function) -> dict:
     }
 
 
-def get_letter_coins(cognitive_function1, cognitive_function2) -> dict:
+def get_letter_coins(cognitive_function1: str, cognitive_function2: str) -> Dict[str, Optional[str]]:
     """Extract the letter-based coins from the OPS code.
 
-    Args:
-        cognitive_function1 (str): The first cognitive function part of the OPS code.
-        cognitive_function2 (str): The second cognitive function part of the OPS code.
-
-    Returns:
-        dict: Dictionary with keys 'Observer' and 'Decider'.
+    :param cognitive_function1: str, the first cognitive function part of the OPS code
+    :param cognitive_function2: str, the second cognitive function part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Observer' and 'Decider'
     """
     cognitive_function1 = replace_x_to_none(cognitive_function1)
     cognitive_function2 = replace_x_to_none(cognitive_function2)
@@ -74,15 +66,12 @@ def get_letter_coins(cognitive_function1, cognitive_function2) -> dict:
     }
 
 
-def get_animal_coins(first_two_animals, fourth_animal) -> dict:
+def get_animal_coins(first_two_animals: str, fourth_animal: str) -> Dict[str, Optional[str]]:
     """Extract the animal coins from the OPS code.
 
-    Args:
-        first_two_animals (str): The first two animals part of the OPS code.
-        fourth_animal (str): The fourth animal part of the OPS code.
-
-    Returns:
-        dict: Dictionary with keys 'Energy Animal', 'Info Animal', and 'Dominant Animal'.
+    :param first_two_animals: str, the first two animals part of the OPS code
+    :param fourth_animal: str, the fourth animal part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Energy Animal', 'Info Animal', and 'Dominant Animal'
     """
     first_animal = replace_x_to_none(first_two_animals[FIRST])
     second_animal = replace_x_to_none(first_two_animals[SECOND])
@@ -101,14 +90,11 @@ def get_animal_coins(first_two_animals, fourth_animal) -> dict:
     }
 
 
-def get_sexual_modality_coins(modality) -> dict:
+def get_sexual_modality_coins(modality: str) -> Dict[str, Optional[str]]:
     """Extract the sexual modality coins from the OPS code.
 
-    Args:
-        modality (str): The modality part of the OPS code.
-
-    Returns:
-        dict: Dictionary with keys 'Sensory' and 'Extraverted Decider'.
+    :param modality: str, the modality part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Sensory' and 'Extraverted Decider'
     """
     sensory = replace_x_to_none(modality[FIRST])
     decider = replace_x_to_none(modality[SECOND])
@@ -118,14 +104,11 @@ def get_sexual_modality_coins(modality) -> dict:
     }
 
 
-def extract_coins_from_ops(ops: str) -> dict:
+def extract_coins_from_ops(ops: str) -> Dict[str, Dict[str, Optional[str]]]:
     """Parse an OPS code string and extract all the coins from it.
 
-    Args:
-        ops (str): The OPS code string to be parsed.
-
-    Returns:
-        dict: A nested dictionary containing all extracted coins.
+    :param ops: str, the OPS code string to be parsed
+    :return: Dict[str, Dict[str, Optional[str]]], a nested dictionary containing all extracted coins
     """
     parts = ops.split("-")
     if len(parts) != COINS_SPLIT:
@@ -173,14 +156,11 @@ def extract_coins_from_ops(ops: str) -> dict:
     }
 
 
-def flatten_and_concatenate_keys(nested_dict) -> dict:
+def flatten_and_concatenate_keys(nested_dict: Dict[str, Dict[str, Optional[str]]]) -> Dict[str, Optional[str]]:
     """Flatten a nested dictionary by concatenating parent and child keys.
 
-    Args:
-        nested_dict (dict): A nested dictionary with dictionaries as values.
-
-    Returns:
-        dict: A flattened dictionary with concatenated keys.
+    :param nested_dict: Dict[str, Dict[str, Optional[str]]], a nested dictionary with dictionaries as values
+    :return: Dict[str, Optional[str]], a flattened dictionary with concatenated keys
     """
     flattened_dict = {}
     for parent_key, child_dict in nested_dict.items():
@@ -193,13 +173,10 @@ def flatten_and_concatenate_keys(nested_dict) -> dict:
 def save_csv(df: pd.DataFrame, original_csv_path: str, suffix: str) -> str:
     """Save a DataFrame to a CSV file with a specified suffix added to the file name.
 
-    Args:
-        df (pd.DataFrame): The DataFrame to be saved.
-        original_csv_path (str): The path of the original CSV file.
-        suffix (str): The suffix to add to the original file name.
-
-    Returns:
-        str: The file path to the newly saved CSV file.
+    :param df: pd.DataFrame, the DataFrame to be saved
+    :param original_csv_path: str, the path of the original CSV file
+    :param suffix: str, the suffix to add to the original file name
+    :return: str, the file path to the newly saved CSV file
     """
     old_name = 0
     new_csv_name = os.path.splitext(os.path.basename(original_csv_path))[old_name] + suffix + ".csv"
@@ -211,11 +188,8 @@ def save_csv(df: pd.DataFrame, original_csv_path: str, suffix: str) -> str:
 def clean_ops_data(csv_path: str) -> str:
     """Clean the OPS data by removing annotations, replacing '?' with 'x', converting 'X' to lowercase.
 
-    Args:
-        csv_path (str): The file path to the CSV file that needs cleaning.
-
-    Returns:
-        str: The file path to the cleaned CSV file.
+    :param csv_path: str, the file path to the CSV file that needs cleaning
+    :return: str, the file path to the cleaned CSV file
     """
     # Read the CSV file into a DataFrame
     df = pd.read_csv(csv_path)
@@ -237,11 +211,11 @@ def clean_ops_data(csv_path: str) -> str:
     return save_csv(df, csv_path, "_cleaned")
 
 
-def process_ops_code_to_coins_in_csv(cleaned_csv_path: str):
+def process_ops_code_to_coins_in_csv(cleaned_csv_path: str) -> str:
     """Process the OPS codes in the cleaned CSV file and add extracted coins.
 
-    Args:
-        cleaned_csv_path (str): The file path to the cleaned CSV file containing OPS codes.
+    :param cleaned_csv_path: str, the file path to the cleaned CSV file containing OPS codes
+    :return: str, the file path to the processed CSV file with coins added
     """
     cleaned_df = pd.read_csv(cleaned_csv_path)
 

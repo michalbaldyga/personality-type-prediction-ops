@@ -22,13 +22,10 @@ face_mesh = mp_face_mesh.FaceMesh(static_image_mode=True, refine_landmarks=True,
 def resize_image(_image: np.ndarray, _filename: str, directory: str, size: int = 256) -> None:
     """Resize an image to a square format, maintaining aspect ratio, and save it.
 
-    Args:
-        _image: Image to be resized.
-        _filename: Filename for the resized image.
-        directory: Directory to save the resized image.
-        size: Target size for the longest dimension of the image.
-
-    This function resizes an image, adds padding to make it square, and saves it to the specified directory.
+    :param _image: np.ndarray, image to be resized.
+    :param _filename: str, filename for the resized image.
+    :param directory: str, directory to save the resized image.
+    :param size: int, target size for the longest dimension of the image.
     """
     h, w = _image.shape[:2]
     if h > w:
@@ -51,14 +48,11 @@ def resize_image(_image: np.ndarray, _filename: str, directory: str, size: int =
 def crop_to_face(_corrected_image: np.ndarray, face_landmarks, w: int, h: int) -> np.ndarray | None:
     """Crop an image to the region containing the face based on facial landmarks.
 
-    Args:
-        _corrected_image: Image to crop.
-        face_landmarks: Facial landmarks for determining the crop area.
-        w: Width of the image.
-        h: Height of the image.
-
-    Returns:
-        Cropped image centered around the face or None if no landmarks are detected.
+    :param _corrected_image: np.ndarray, image to crop.
+    :param face_landmarks: Landmarks, facial landmarks for determining the crop area.
+    :param w: int, width of the image.
+    :param h: int, height of the image.
+    :return: Union[np.ndarray, None], cropped image centered around the face or None if no landmarks are detected.
     """
     landmark_points = np.array([(lm.x * w, lm.y * h) for lm in face_landmarks.landmark], dtype=np.int32)
 
@@ -74,13 +68,10 @@ def correct_orientation_and_crop(_image: np.ndarray, _filename: str, corrected_d
                                  no_face_directory: str) -> None:
     """Correct the orientation of an image and crop it to the face.
 
-    Args:
-        _image: Image to be processed.
-        _filename: Filename for the processed image.
-        corrected_directory: Directory to save the image if a face is detected.
-        no_face_directory: Directory to save the image if no face is detected.
-
-    This function corrects the orientation of the image based on facial landmarks, crops it to the face, and saves it.
+    :param _image: np.ndarray, image to be processed.
+    :param _filename: str, filename for the processed image.
+    :param corrected_directory: str, directory to save the image if a face is detected.
+    :param no_face_directory: str, directory to save the image if no face is detected.
     """
     results = face_mesh.process(cv2.cvtColor(_image, cv2.COLOR_BGR2RGB))
 
@@ -111,10 +102,7 @@ def correct_orientation_and_crop(_image: np.ndarray, _filename: str, corrected_d
 def draw_landmarks_on_images(directory: str) -> None:
     """Draw facial landmarks on images in a specified directory.
 
-    Args:
-        directory: Directory containing images to process.
-
-    This function processes each image in the directory, adds facial landmarks using MediaPipe's FaceMesh, and saves the modified image.
+    :param directory: str, directory containing images to process.
     """
     mp_drawing = mp.solutions.drawing_utils
     drawing_spec = mp.solutions.drawing_utils.DrawingSpec(thickness=1, circle_radius=1, color=(0, 255, 0))
