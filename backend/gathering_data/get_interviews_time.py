@@ -18,7 +18,7 @@ def sum_interviews_time():
             try:
                 duration = get_video_duration(content)
                 if duration == 0.0:
-                    raise Exception("elo")
+                    raise Exception(f"{idx}: Error {url} .Video duration equals 0")
                 result += duration
                 print(f"{idx}: {url} - {result}")
                 idx += 1
