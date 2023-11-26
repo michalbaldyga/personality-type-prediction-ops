@@ -9,13 +9,11 @@ class ChartFrame(ctk.CTkFrame):
     def __init__(self, master, categories, values, selected_option):
         """Initialize the ChartFrame.
 
-        Parameters:
-        - master: The Tkinter master widget.
-        - categories: List of category names.
-        - values: List of corresponding values.
-        - selected_option: The selected option for the chart.
-
-        Returns: None
+        :param master: The Tkinter master widget.
+        :param categories: List of category names.
+        :param values: List of corresponding values.
+        :param selected_option: The selected option for the chart.
+        :return: None
         """
         super().__init__(master, width=400, height=300)
 
@@ -33,12 +31,10 @@ class ChartFrame(ctk.CTkFrame):
     def create_chart(self, categories, values, selected_option):
         """Create a bar chart and display it in the Tkinter window.
 
-        Parameters:
-        - categories: List of category names.
-        - values: List of corresponding values.
-        - selected_option: The selected option for the chart.
-
-        Returns: None
+        :param categories: List of category names.
+        :param values: List of corresponding values.
+        :param selected_option: The selected option for the chart.
+        :return: None
         """
         # Create a figure and axis
         fig, ax = plt.subplots(figsize=(8, 6))

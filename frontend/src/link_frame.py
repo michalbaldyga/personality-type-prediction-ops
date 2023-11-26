@@ -9,11 +9,9 @@ class LinkFrame(ctk.CTkFrame):
     def __init__(self, master, back_callback):
         """Initialize the LinkFrame.
 
-        Parameters:
-        - master: The Tkinter master widget.
-        - back_callback: The callback function to go back to the previous frame.
-
-        Returns: None
+        :param master: The Tkinter master widget.
+        :param back_callback: The callback function to go back to the previous frame.
+        :return: None
         """
         super().__init__(master, width=400, height=300)
         self.back_callback = back_callback

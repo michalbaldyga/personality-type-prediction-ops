@@ -12,9 +12,8 @@ class StyledText(ctk.CTkFrame):
     def __init__(self, master=None, **kwargs):
         """Initialize the StyledText widget.
 
-        Parameters:
-            master (tk.Tk or tk.Toplevel): The master widget.
-            **kwargs: Additional keyword arguments for customization.
+        :param master: tk.Tk or tk.Toplevel, The master widget.
+        :param kwargs: Additional keyword arguments for customization.
         """
         super().__init__(master, **kwargs)
 
@@ -32,49 +31,43 @@ class StyledText(ctk.CTkFrame):
     def insert(self, index, text, tags=None):
         """Insert text at the specified index.
 
-        Parameters:
-            index (str): The index where the text should be inserted.
-            text (str): The text to be inserted.
-            tags (str or tuple, optional): Tags to apply to the inserted text.
+        :param index: str, The index where the text should be inserted.
+        :param text: str, The text to be inserted.
+        :param tags: str or tuple, optional, Tags to apply to the inserted text.
         """
         self.textbox.insert(index, text, tags)
 
     def delete(self, index1, index2=None):
         """Delete text between the specified indices.
 
-        Parameters:
-            index1 (str): The starting index for deletion.
-            index2 (str, optional): The ending index for deletion. If not provided, deletes only the character at index1.
+        :param index1: str, The starting index for deletion.
+        :param index2: str, optional, The ending index for deletion. If not provided, deletes only the character at index1.
         """
         self.textbox.delete(index1, index2)
 
     def get(self, index1, index2=None):
         """Get the text between the specified indices.
 
-        Parameters:
-            index1 (str): The starting index.
-            index2 (str, optional): The ending index. If not provided, returns the character at index1.
+        :param index1: str, The starting index.
+        :param index2: str, optional, The ending index. If not provided, returns the character at index1.
 
-        Returns:
-            str: The text between the specified indices.
+        :return: str, The text between the specified indices.
         """
         return self.textbox.get(index1, index2)
 
     def configure(self, **kwargs):
         """Configure the appearance and behavior of the text widget.
 
-        Parameters:
-            **kwargs: Additional keyword arguments for configuration.
+        :param kwargs: Additional keyword arguments for configuration.
         """
         self.textbox.configure(**kwargs)
 
     def bind(self, sequence=None, func=None, add=None):
         """Bind a function to an event sequence.
 
-        Parameters:
-            sequence (str, optional): The event sequence.
-            func (function, optional): The function to bind to the event.
-            add (str, optional): Specifies whether the new binding should be added or replace any existing binding.
+        :param sequence: str, optional, The event sequence.
+        :param func: function, optional, The function to bind to the event.
+        :param add: str, optional, Specifies whether the new binding should be added or replace any existing binding.
 
         Note:
             Refer to Tkinter documentation for event sequence format.
@@ -93,9 +86,8 @@ class TextFrame(ctk.CTkFrame):
     def __init__(self, master=None, back_callback=None):
         """Initialize the TextFrame.
 
-        Parameters:
-            master (tk.Tk or tk.Toplevel): The master widget.
-            back_callback (function): The callback function to go back to the previous frame.
+        :param master: tk.Tk or tk.Toplevel, The master widget.
+        :param back_callback: function, The callback function to go back to the previous frame.
         """
         super().__init__(master, width=400, height=300)
         self.back_callback = back_callback

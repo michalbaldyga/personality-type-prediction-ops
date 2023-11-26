@@ -23,10 +23,9 @@ class PredictFrame(ctk.CTkFrame):
     def __init__(self, master, back_callback, method):
         """Initialize the PredictFrame.
 
-        Parameters:
-            master (tk.Tk or tk.Toplevel): The master widget.
-            back_callback (function): The callback function to go back to the previous frame.
-            method (str): The method used for prediction.
+        :param master: tk.Tk or tk.Toplevel, The master widget.
+        :param back_callback: function, The callback function to go back to the previous frame.
+        :param method: str, The method used for prediction.
         """
         super().__init__(master, width=400, height=300)
         self.back_callback = back_callback
@@ -176,7 +175,6 @@ class PredictFrame(ctk.CTkFrame):
         ]
 
         return coins, category_name
-
 
     def segmented_button_callback(self, value):
         """Callback function for the segmented button."""

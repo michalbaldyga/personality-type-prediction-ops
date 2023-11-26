@@ -12,11 +12,7 @@ class MainAppWindow(ctk.CTk):
     def __init__(self):
         """Initialize the MainAppWindow.
 
-        Parameters:
-        - None
-
-        Returns:
-        - None
+        :return: None
         """
         super().__init__()
 

@@ -16,9 +16,8 @@ class SelfieFrame(ctk.CTkFrame):
     def __init__(self, master, back_callback):
         """Initialize the SelfieFrame.
 
-        Parameters:
-            master (tk.Tk or tk.Toplevel): The master widget.
-            back_callback (function): The callback function to go back to the previous frame.
+        :param master: tk.Tk or tk.Toplevel, The master widget.
+        :param back_callback: function, The callback function to go back to the previous frame.
         """
         super().__init__(master, width=400, height=300)
         self.back_callback = back_callback
@@ -68,8 +67,7 @@ class SelfieFrame(ctk.CTkFrame):
     def display_selected_image(self, image_path):
         """Display the selected image on the frame.
 
-        Parameters:
-            image_path (str): The path to the selected image.
+        :param image_path: str, The path to the selected image.
         """
         try:
             pil_image = Image.open(image_path)
