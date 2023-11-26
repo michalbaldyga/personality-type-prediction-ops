@@ -1,5 +1,6 @@
 import os
 import argparse
+import time
 from collections import defaultdict
 from urllib.parse import urlparse, parse_qs
 
@@ -24,6 +25,8 @@ RAW_AUDIO_FILE_DIR = os.path.join("files", "audios")
 CLEAN_AUDIO_FILE_DIR = os.path.join("files", "clean_audios")
 INPUT_CSV_FILE_DIR = os.path.join(CSV_DIR, "interview_links.csv")
 OUTPUT_CSV_FILE_DIR = os.path.join("files", "transcripts.csv")
+RETRY_DELAY = 10
+MAX_RETRIES = 5
 
 
 def download_audio(url):
@@ -40,19 +43,30 @@ def download_audio(url):
 
     output_filename = os.path.join(RAW_AUDIO_FILE_DIR, f"{video_id}.wav")
     if not os.path.exists(output_filename):
-        ydl_opts = {
-            "format": BEST_AUDIO_FORMAT,
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": PREFERRED_CODEC,
-                "preferredquality": PREFERRED_QUALITY,
-            }],
-            "outtmpl": output_filename[:-4],
-        }
+        retry_count = 0
+        while retry_count < 5:
+            try:
+                ydl_opts = {
+                    "format": BEST_AUDIO_FORMAT,
+                    "postprocessors": [{
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": PREFERRED_CODEC,
+                        "preferredquality": PREFERRED_QUALITY,
+                    }],
+                    "outtmpl": output_filename[:-4],
+                }
 
-        with yt_dlp.YoutubeDL(ydl_opts) as youtube_dl:
-            youtube_dl.download([url])
-        print(f"Audio downloaded and saved to {output_filename}.")
+                with yt_dlp.YoutubeDL(ydl_opts) as youtube_dl:
+                    youtube_dl.download([url])
+
+                print(f"Audio downloaded and saved to {output_filename}.")
+                return output_filename
+            except Exception as e:
+                print(f"Error downloading {url}: {e}. Retrying in {RETRY_DELAY} seconds...")
+                time.sleep(RETRY_DELAY)
+                retry_count += 1
+
+        print(f"Failed to download {url} after {MAX_RETRIES} retries.")
     else:
         print(f"Audio already downloaded: {output_filename}")
 
