@@ -17,7 +17,7 @@ WHISPER_VERSION = "base"
 LANGUAGE = "en"
 USE_AUTH_TOKEN = "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"
 CSV_DIR = '../../static/csv/'
-RAW_AUDIO_FILE_DIR = os.path.join("files", "raw_audio.wav")
+RAW_AUDIO_FILE_DIR = os.path.join("files", "audios")
 CLEAN_AUDIO_FILE_DIR = os.path.join("files", "clean_audio.wav")
 INPUT_CSV_FILE_DIR = os.path.join(CSV_DIR, "interview_links.csv")
 OUTPUT_CSV_FILE_DIR = os.path.join("files", "transcripts.csv")
@@ -150,7 +150,7 @@ def main():
         diarization_results = apply_diarization(youtube_link, raw_audio_file, diarization_model)
 
         # Load audio file
-        audio = AudioSegment.from_file(RAW_AUDIO_FILE_DIR)
+        audio = AudioSegment.from_file(raw_audio_file)
 
         # Group timestamps by speakers
         speaker_timestamps = defaultdict(list)
