@@ -20,12 +20,9 @@ RECORDS_CLEANED_PROCESSED_CSV = os.path.join(STATIC_CSV_DIR, "records_cleaned_pr
 def image_exists(row: pd.Series, directory: str) -> bool:
     """Check if an image file exists in a given directory based on a DataFrame row.
 
-    Args:
-        row (pd.Series): A row from a DataFrame containing image names.
-        directory (str): The directory path where the image files are located.
-
-    Returns:
-        bool: True if the image file exists, False otherwise.
+    :param row: pd.Series, a row from a DataFrame containing image names.
+    :param directory: str, the directory path where the image files are located.
+    :return: bool, True if the image file exists, False otherwise.
     """
     image_path = os.path.join(directory, row["name"] + ".jpg")
     return os.path.isfile(image_path)
@@ -34,10 +31,9 @@ def image_exists(row: pd.Series, directory: str) -> bool:
 def save_image(image: np.ndarray, filename: str, directory: str) -> None:
     """Save an image to a specified directory with a given filename.
 
-    Args:
-        image (np.ndarray): The image to be saved.
-        filename (str): The name of the file to save the image as.
-        directory (str): The directory path where the image will be saved.
+    :param image: np.ndarray, the image to be saved.
+    :param filename: str, the name of the file to save the image as.
+    :param directory: str, the directory path where the image will be saved.
     """
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -48,8 +44,7 @@ def save_image(image: np.ndarray, filename: str, directory: str) -> None:
 def rename_to_ascii_img(directory: str) -> None:
     """Rename all image files in a directory to ASCII, replacing non-ASCII characters.
 
-    Args:
-        directory (str): The directory path containing the image files.
+    :param directory: str, the directory path containing the image files.
     """
     ascii_limit = 128  # Maximum ordinal value for ASCII characters
 
@@ -65,8 +60,7 @@ def rename_to_ascii_img(directory: str) -> None:
 def rename_to_ascii_csv(directory: str) -> None:
     """Convert 'name' column entries in a CSV file to ASCII and save the changes.
 
-    Args:
-        directory (str): The directory path of the CSV file.
+    :param directory: str, the directory path of the CSV file.
     """
     df = pd.read_csv(directory)
     df["name"] = df["name"].apply(lambda name: unidecode.unidecode(name).replace(" ", "_"))
@@ -76,11 +70,8 @@ def rename_to_ascii_csv(directory: str) -> None:
 def find_image_extremes(directory: str) -> tuple[tuple[int, int], tuple[int, int]]:
     """Find the smallest and largest images in a directory.
 
-    Args:
-        directory (str): The directory path containing the image files.
-
-    Returns:
-        Tuple[Tuple[int, int], Tuple[int, int]]: The dimensions of the smallest and largest images.
+    :param directory: str, the directory path containing the image files.
+    :return: tuple[tuple[int, int], tuple[int, int]], the dimensions of the smallest and largest images.
     """
     min_dim = None
     max_dim = None
@@ -98,8 +89,7 @@ def find_image_extremes(directory: str) -> tuple[tuple[int, int], tuple[int, int
 def replace_space_with_underscore_image(directory: str) -> None:
     """Rename image files by replacing spaces with underscores.
 
-    Args:
-        directory (str): The directory containing the images.
+    :param directory: str, the directory containing the images.
     """
     for filename in os.listdir(directory):
         if " " in filename:
@@ -113,8 +103,7 @@ def replace_space_with_underscore_image(directory: str) -> None:
 def replace_space_with_underscore_csv(csv_file_path: str) -> None:
     """Replace spaces with underscores in the 'name' column of a CSV file.
 
-    Args:
-        csv_file_path (str): The path to the CSV file.
+    :param csv_file_path: str, the path to the CSV file.
     """
     try:
         df = pd.read_csv(csv_file_path)

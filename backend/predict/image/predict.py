@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras.applications import ResNet50
@@ -9,6 +10,7 @@ from keras.mixed_precision import set_global_policy
 from keras.models import Model
 from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator
+from sklearn.model_selection import KFold
 
 from backend import utils
 from backend.utils import RECORDS_CLEANED_PROCESSED_CSV
@@ -35,14 +37,10 @@ ops_data = pd.read_csv(RECORDS_CLEANED_PROCESSED_CSV)
 
 
 # Function to create and compile a model
-def create_model():
+def create_model() -> Model:
     """Create and compile a ResNet50 model for binary classification.
 
-    The function initializes a ResNet50 model, adds custom top layers, and compiles it
-    with RMSprop optimizer and binary crossentropy loss function.
-
-    Returns:
-        A compiled Keras Model instance.
+    :return: Model, a compiled Keras Model instance.
     """
     base_model = ResNet50(weights="imagenet", include_top=False)
     x = base_model.output
@@ -84,7 +82,8 @@ train_datagen = ImageDataGenerator(
     horizontal_flip=True,
     fill_mode="nearest",
 )
-
+FOLDS_NUMBER = 5
+kfold = KFold(n_splits=FOLDS_NUMBER, shuffle=True, random_state=42)
 # Iterate over each coin and train a model
 for coin in coins_columns:
     # Filter out NaN values and check if image exists with .jpg extension
@@ -96,24 +95,43 @@ for coin in coins_columns:
     filtered_df["image_path"] = filtered_df["name"].apply(
         lambda x: os.path.join(IMPROVED_QUALITY_DIRECTORY, x + ".jpg"))
 
-    # Create a generator that reads images from the paths, and uses the coin labels for training
-    train_generator = train_datagen.flow_from_dataframe(
-        dataframe=filtered_df,
-        x_col="image_path",  # Updated to use the path with the .jpg extension
-        y_col=coin,
-        target_size=(224, 224),
-        batch_size=32,
-        class_mode="binary",
-        validate_filenames=True,  # Now we can set to True because we are sure that files exist
-    )
+    accuracy = []
+    for train_index, test_index in kfold.split(filtered_df):
+        # Splitting the DataFrame into train and validation sets
+        train_df = filtered_df.iloc[train_index]
+        valid_df = filtered_df.iloc[test_index]
 
-    # Define a model checkpoint callback to save the best model for each coin
-    checkpoint = ModelCheckpoint(f"model_{coin}.h5", monitor="accuracy", save_best_only=True, mode="max")
+        # Creating train and validation generators for this fold
+        train_generator_fold = train_datagen.flow_from_dataframe(
+            dataframe=train_df,
+            x_col="image_path",
+            y_col=coin,
+            target_size=(224, 224),
+            batch_size=32,
+            class_mode="binary"
+        )
 
-    # Train the model
-    models[coin].fit(
-        train_generator,
-        steps_per_epoch=train_generator.n // train_generator.batch_size,
-        epochs=10,  # Adjust the number of epochs as necessary
-        callbacks=[checkpoint],
-    )
+        valid_generator_fold = train_datagen.flow_from_dataframe(
+            dataframe=valid_df,
+            x_col="image_path",
+            y_col=coin,
+            target_size=(224, 224),
+            batch_size=32,
+            class_mode="binary"
+        )
+
+        # Define a model checkpoint callback to save the best model for each coin
+        checkpoint = ModelCheckpoint(f"model_{coin}.h5", monitor="val_accuracy", save_best_only=True, mode="max")
+
+        # Train the model
+        models[coin].fit(
+            train_generator_fold,
+            steps_per_epoch=train_generator_fold.n // train_generator_fold.batch_size,
+            epochs=10,  # Adjust the number of epochs as necessary
+            callbacks=[checkpoint],
+        )
+
+        _, test_acc = models[coin].evaluate(valid_generator_fold, verbose=2)
+
+        accuracy.append(test_acc)
+    print(f"Accuracy: {np.average(accuracy):.2f}")
