@@ -40,19 +40,30 @@ def download_audio(url):
 
     output_filename = os.path.join(RAW_AUDIO_FILE_DIR, f"{video_id}.wav")
     if not os.path.exists(output_filename):
-        ydl_opts = {
-            "format": BEST_AUDIO_FORMAT,
-            "postprocessors": [{
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": PREFERRED_CODEC,
-                "preferredquality": PREFERRED_QUALITY,
-            }],
-            "outtmpl": output_filename[:-4],
-        }
+        retry_count = 0
+        while retry_count < 5:
+            try:
+                ydl_opts = {
+                    "format": BEST_AUDIO_FORMAT,
+                    "postprocessors": [{
+                        "key": "FFmpegExtractAudio",
+                        "preferredcodec": PREFERRED_CODEC,
+                        "preferredquality": PREFERRED_QUALITY,
+                    }],
+                    "outtmpl": output_filename[:-4],
+                }
 
-        with yt_dlp.YoutubeDL(ydl_opts) as youtube_dl:
-            youtube_dl.download([url])
-        print(f"Audio downloaded and saved to {output_filename}.")
+                with yt_dlp.YoutubeDL(ydl_opts) as youtube_dl:
+                    youtube_dl.download([url])
+
+                print(f"Audio downloaded and saved to {output_filename}.")
+                return output_filename
+            except Exception as e:
+                print(f"Error downloading {url}: {e}. Retrying in {retry_delay} seconds...")
+                time.sleep(retry_delay)
+                retry_count += 1
+
+        print(f"Failed to download {url} after {max_retries} retries.")
     else:
         print(f"Audio already downloaded: {output_filename}")
 
