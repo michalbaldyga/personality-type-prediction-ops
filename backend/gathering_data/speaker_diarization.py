@@ -1,5 +1,7 @@
 import os
+import argparse
 from collections import defaultdict
+from urllib.parse import urlparse, parse_qs
 
 import pandas as pd
 import torch
@@ -19,7 +21,7 @@ LANGUAGE = "en"
 USE_AUTH_TOKEN = "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"
 CSV_DIR = '../../static/csv/'
 RAW_AUDIO_FILE_DIR = os.path.join("files", "audios")
-CLEAN_AUDIO_FILE_DIR = os.path.join("files", "clean_audio.wav")
+CLEAN_AUDIO_FILE_DIR = os.path.join("files", "clean_audios")
 INPUT_CSV_FILE_DIR = os.path.join(CSV_DIR, "interview_links.csv")
 OUTPUT_CSV_FILE_DIR = os.path.join("files", "transcripts.csv")
 
@@ -30,7 +32,12 @@ def download_audio(url):
     :param url: str, YouTube video URL.
     :param output_path: str, Output path to save the downloaded audio.
     """
-    video_id = url.split('=')[-1]
+    parsed_url = urlparse(url)
+    if parsed_url.netloc == 'youtu.be':
+        video_id = parsed_url.path[1:]  # Remove the leading '/'
+    else:
+        video_id = parse_qs(parsed_url.query)['v'][0]
+
     output_filename = os.path.join(RAW_AUDIO_FILE_DIR, f"{video_id}.wav")
     if not os.path.exists(output_filename):
         ydl_opts = {
@@ -123,13 +130,17 @@ def remove_temp_files(files):
             os.remove(file)
 
 
-def main():
+def main(machine_number, total_machines):
     # Load models
     diarization_model = load_diarization_model(MODEL_PRETRAINED)
     whisper_model = whisper.load_model(WHISPER_VERSION, device=torch.device("cuda" if torch.cuda.is_available() else "cpu"))
 
     # Load input .csv file
     df = pd.read_csv(INPUT_CSV_FILE_DIR, delimiter=";")
+    rows_per_machine = len(df) // total_machines
+    start_index = machine_number * rows_per_machine
+    end_index = (machine_number + 1) * rows_per_machine if machine_number != total_machines - 1 else len(df)
+    df_subset = df.iloc[start_index:end_index]
 
     processed_files = set()  # Keep track of already processed files
     if os.path.exists(OUTPUT_CSV_FILE_DIR):
@@ -138,7 +149,7 @@ def main():
                 name = line.split('|')[0]
                 processed_files.add(name)
 
-    for _, row in tqdm(df.iterrows(), total=df.shape[0], desc="Processing Interviews"):
+    for _, row in tqdm(df_subset.iterrows(), total=df_subset.shape[0], desc="Processing Interviews"):
         name, youtube_link = row["name"], row["interview_link"]
         if name in processed_files:
             print(f"Skipping already processed interview: {name}")
@@ -173,11 +184,13 @@ def main():
         combined = sum(segments[1:], segments[0])
 
         # Export the combined audio
-        combined.export(CLEAN_AUDIO_FILE_DIR, format="wav")
+        video_id = raw_audio_file.split('/')[-1].replace('.wav', '')
+        clean_audio_file = os.path.join(CLEAN_AUDIO_FILE_DIR, f"clean_audio_{video_id}.wav")
+        combined.export(clean_audio_file, format="wav")
 
         # Transcribe the cleaned audio
         print("Transcribing cleaned audio...")
-        result = whisper_model.transcribe(audio=CLEAN_AUDIO_FILE_DIR, language=LANGUAGE)
+        result = whisper_model.transcribe(audio=clean_audio_file, language=LANGUAGE)
         print("Transcription completed.")
 
         # Write the transcription to a file
@@ -185,8 +198,17 @@ def main():
             outfile.write(f"{name}|{result.get('text')}\n")
 
         # Remove unnecessary files
-        remove_temp_files([CLEAN_AUDIO_FILE_DIR])
+        remove_temp_files([clean_audio_file])
 
 
 if __name__ == "__main__":
-    main()
+    os.makedirs(RAW_AUDIO_FILE_DIR, exist_ok=True)
+    os.makedirs(CLEAN_AUDIO_FILE_DIR, exist_ok=True)
+
+    parser = argparse.ArgumentParser(description='Run speaker diarization script in parallel across multiple machines.')
+    parser.add_argument('-m', '--machine_number', type=int, default=0, help='The number of this machine (0-indexed)')
+    parser.add_argument('-t', '--total_machines', type=int, default=1, help='Total number of machines used for processing')
+
+
+    args = parser.parse_args()
+    main(args.machine_number, args.total_machines)
