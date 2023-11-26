@@ -7,6 +7,7 @@ import whisper
 import yt_dlp
 from pyannote.audio import Pipeline
 from pydub import AudioSegment
+from tqdm import tqdm
 
 # Constants
 BEST_AUDIO_FORMAT = "bestaudio/best"
@@ -31,7 +32,7 @@ def download_audio(url, output_path):
     """
     video_id = url.split('=')[-1]
     output_filename = os.path.join(output_path, f"{video_id}.wav")
-    if not os.path.exists(output_filename):  # Check if file already exists
+    if not os.path.exists(output_filename):
         ydl_opts = {
             "format": BEST_AUDIO_FORMAT,
             "postprocessors": [{
@@ -121,7 +122,6 @@ def remove_temp_files(files):
         if os.path.exists(file):
             os.remove(file)
 
-from tqdm import tqdm
 
 def main():
     # Load models
@@ -167,8 +167,7 @@ def main():
         sorted_intervals = sorted(max_intervals, key=lambda x: x[0])
 
         # Segment out the parts of the audio where the selected speaker is talking
-        segments = [audio[start:end] for start, end in tqdm(sorted_intervals, desc=f"Processing Audio Segments for {name}")]  # Add progress bar for audio segment processing
-
+        segments = [audio[start:end] for start, end in sorted_intervals]
 
         # Combine segments or handle them individually
         combined = sum(segments[1:], segments[0])
