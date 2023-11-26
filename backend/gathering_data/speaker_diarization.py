@@ -24,14 +24,14 @@ INPUT_CSV_FILE_DIR = os.path.join(CSV_DIR, "interview_links.csv")
 OUTPUT_CSV_FILE_DIR = os.path.join("files", "transcripts.csv")
 
 
-def download_audio(url, output_path):
+def download_audio(url):
     """Download audio from a given URL and save it to the specified output path.
 
     :param url: str, YouTube video URL.
     :param output_path: str, Output path to save the downloaded audio.
     """
     video_id = url.split('=')[-1]
-    output_filename = os.path.join(output_path, f"{video_id}.wav")
+    output_filename = os.path.join(RAW_AUDIO_FILE_DIR, f"{video_id}.wav")
     if not os.path.exists(output_filename):
         ydl_opts = {
             "format": BEST_AUDIO_FORMAT,
@@ -146,7 +146,7 @@ def main():
 
         # Apply diarization
 
-        raw_audio_file = download_audio(youtube_link, RAW_AUDIO_FILE_DIR)
+        raw_audio_file = download_audio(youtube_link)
         diarization_results = apply_diarization(youtube_link, raw_audio_file, diarization_model)
 
         # Load audio file
@@ -185,7 +185,7 @@ def main():
             outfile.write(f"{name}|{result.get('text')}\n")
 
         # Remove unnecessary files
-        remove_temp_files([RAW_AUDIO_FILE_DIR, CLEAN_AUDIO_FILE_DIR])
+        remove_temp_files([CLEAN_AUDIO_FILE_DIR])
 
 
 if __name__ == "__main__":
