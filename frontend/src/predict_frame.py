@@ -1,12 +1,32 @@
 import random
-import customtkinter as ctk
 import webbrowser
-from chart_frame import ChartFrame
 from tkinter import filedialog
+
+import customtkinter as ctk
+from chart_frame import ChartFrame
 
 
 class PredictFrame(ctk.CTkFrame):
+    """Frame for displaying prediction results.
+
+    Attributes:
+        back_callback (function): Callback function to go back to the previous frame.
+        method (str): The method used for prediction.
+        segmented_button_var (tk.StringVar): Variable for the segmented button selection.
+        segmented_button (ctk.CTkSegmentedButton): Segmented button for selecting different options.
+        selected_label (ctk.CTkLabel): Label to display the selected option.
+        save_button (ctk.CTkButton): Button for saving the prediction data to a file.
+        show_chart_button (ctk.CTkButton): Button for showing a chart based on the selected option.
+        hyperlink_label (ctk.CTkLabel): Hyperlink label to open a web browser.
+    """
+
     def __init__(self, master, back_callback, method):
+        """Initialize the PredictFrame.
+
+        :param master: tk.Tk or tk.Toplevel, The master widget.
+        :param back_callback: function, The callback function to go back to the previous frame.
+        :param method: str, The method used for prediction.
+        """
         super().__init__(master, width=400, height=300)
         self.back_callback = back_callback
         self.method = method
@@ -27,7 +47,7 @@ class PredictFrame(ctk.CTkFrame):
         self.segmented_button.pack(side="top", pady=(10))
 
         # Label to display the selected option
-        self.selected_label = ctk.CTkLabel(self, text="", font=('Arial', 16))
+        self.selected_label = ctk.CTkLabel(self, text="", font=("Arial", 16))
         self.selected_label.pack(pady=8)
 
         # Create a frame for the buttons
@@ -35,18 +55,18 @@ class PredictFrame(ctk.CTkFrame):
         button_frame.pack(side="bottom", pady=10, padx=10, anchor="center")
 
         # Try again button
-        ctk.CTkButton(button_frame, text="Try again", command=self.back, width=100, height=40, font=('Arial', 14)).pack(
+        ctk.CTkButton(button_frame, text="Try again", command=self.back, width=100, height=40, font=("Arial", 14)).pack(
             side="left", padx=10)
 
         # Save button
         self.save_button = ctk.CTkButton(button_frame, text="Save", command=self.save, width=100,
-                                         height=40, font=('Arial', 14))
+                                         height=40, font=("Arial", 14))
         self.save_button.pack(side="left", padx=10)
 
         # Show chart button
         self.show_chart_button = ctk.CTkButton(button_frame, text="Show chart", command=self.show_chart, width=100,
                                                height=40,
-                                               font=('Arial', 14))
+                                               font=("Arial", 14))
         self.show_chart_button.pack(side="right", padx=10)
 
         # Set default value to "Human" and update the label
@@ -54,36 +74,41 @@ class PredictFrame(ctk.CTkFrame):
         self.segmented_button_callback(coins[0])
 
         # Hyperlink at the bottom, centered
-        self.hyperlink_label = ctk.CTkLabel(self, text="Find your twin and analyze the type", font=('Arial', 14),
+        self.hyperlink_label = ctk.CTkLabel(self, text="Find your twin and analyze the type", font=("Arial", 14),
                                             cursor="hand2",
                                             text_color="#1F6AA5")
-        self.hyperlink_label.bind("<Button-1>", lambda event: self.open_browser(
+        self.hyperlink_label.bind("<Button-1>", lambda _: self.open_browser(
             "http://app.subjectivepersonality.com/analyzer?m=FF&s1=Fe&s2=Se&a=PCSB"))
         self.hyperlink_label.pack(side="bottom")
 
     def back(self):
+        """Go back to the previous frame."""
         if self.back_callback:
             # Go back to the previous frame
             self.back_callback()
             self.destroy()
 
     def save(self):
-
-        # Retrieve data
+        """Save the prediction data to a file."""
         coins, category_name = self.get_names()
         categories, values = self.get_data()
 
         # Create a string with the formatted data
         result_str = f"Predicted coins (method for prediction -> {self.method}):\n"
 
+        beginning_of_human_coins = 0
+        beginning_of_letter_coins = 3
+        beginning_of_animal_coins = 7
+        beginning_of_sexual_coins = 9
+
         for i, category in enumerate(categories):
-            if i == 0:
+            if i == beginning_of_human_coins:
                 result_str += f"\n{coins[0]} coins:\n"
-            if i == 3:
+            if i == beginning_of_letter_coins:
                 result_str += f"\n{coins[1]} coins:\n"
-            if i == 7:
+            if i == beginning_of_animal_coins:
                 result_str += f"\n{coins[2]} coins:\n"
-            if i == 9:
+            if i == beginning_of_sexual_coins:
                 result_str += f"\n{coins[3]} coins:\n"
 
             result_str += f"'{category_name[i]}': {category} {values[i]}%\n"
@@ -104,9 +129,11 @@ class PredictFrame(ctk.CTkFrame):
         print(f"Data saved to {file_path}")
 
     def open_browser(self, url):
+        """Open a web browser with the specified URL."""
         webbrowser.open(url)
 
     def get_data(self):
+        """Generate random data for the prediction."""
         observer = "Oi"
         decider = "Di"
         preferences = "OO"
@@ -138,42 +165,54 @@ class PredictFrame(ctk.CTkFrame):
         return categories, values
 
     def get_names(self):
-
+        """Get names for different coins and categories."""
         coins = ["Human", "Letter", "Animal", "Sexual"]
 
-        category_name = ["Observer", "Decider", "Preferences", "Observer", "Decider", "Energy Animal", "Info Animal",
-                         "Dominant Animal", "Introverted vs Extraverted", "Sensory", "Extraverted Decider"]
+        category_name = [
+            "Observer", "Decider", "Preferences", "Observer", "Decider",
+            "Energy Animal", "Info Animal", "Dominant Animal",
+            "Introverted vs Extraverted", "Sensory", "Extraverted Decider",
+        ]
 
-        return coins, category_name,
+        return coins, category_name
 
     def segmented_button_callback(self, value):
+        """Callback function for the segmented button."""
         print("Segmented button clicked:", value)
 
         coins, category_name = self.get_names()
         categories, values = self.get_data()
 
         # Update the label text based on the selected option
-        if value == f'{coins[0]}':
-            text = f"'{category_name[0]}': {categories[0]} {values[0]}%\n\n" + \
-                   f"'{category_name[1]}': {categories[1]} {values[1]}%\n\n" + \
-                   f"'{category_name[2]}': {categories[2]} {values[2]}%"
+        if value == f"{coins[0]}":
+            text = (
+                f"'{category_name[0]}': {categories[0]} {values[0]}%\n\n"
+                f"'{category_name[1]}': {categories[1]} {values[1]}%\n\n"
+                f"'{category_name[2]}': {categories[2]} {values[2]}%"
+            )
             cat = [categories[0], categories[1], categories[2]]
             val = [values[0], values[1], values[2]]
-        elif value == f'{coins[1]}':
-            text = f"'{category_name[3]}': {categories[3]} {values[3]}%\n\n" + \
-                   f"'{category_name[4]}': {categories[4]} {values[4]}%"
+        elif value == f"{coins[1]}":
+            text = (
+                f"'{category_name[3]}': {categories[3]} {values[3]}%\n\n"
+                f"'{category_name[4]}': {categories[4]} {values[4]}%"
+            )
             cat = [categories[3], categories[4]]
             val = [values[3], values[4]]
-        elif value == f'{coins[2]}':
-            text = f"'{category_name[5]}': {categories[5]} {values[5]}%\n\n" + \
-                   f"'{category_name[6]}': {categories[6]} {values[6]}%\n\n" + \
-                   f"'{category_name[7]}': {categories[7]} {values[7]}%\n\n" + \
-                   f"'{category_name[8]}': {categories[8]} {values[8]}%"
+        elif value == f"{coins[2]}":
+            text = (
+                f"'{category_name[5]}': {categories[5]} {values[5]}%\n\n"
+                f"'{category_name[6]}': {categories[6]} {values[6]}%\n\n"
+                f"'{category_name[7]}': {categories[7]} {values[7]}%\n\n"
+                f"'{category_name[8]}': {categories[8]} {values[8]}%"
+            )
             cat = [categories[5], categories[6], categories[7], categories[8]]
             val = [values[5], values[6], values[7], values[8]]
-        elif value == f'{coins[3]}':
-            text = f"'{category_name[9]}': {categories[9]} {values[9]}%\n\n" + \
-                   f"'{category_name[10]}': {categories[10]} {values[10]}%"
+        elif value == f"{coins[3]}":
+            text = (
+                f"'{category_name[9]}': {categories[9]} {values[9]}%\n\n"
+                f"'{category_name[10]}': {categories[10]} {values[10]}%"
+            )
             cat = [categories[9], categories[10]]
             val = [values[9], values[10]]
 
@@ -183,6 +222,7 @@ class PredictFrame(ctk.CTkFrame):
         return cat, val
 
     def show_chart(self):
+        """Show a chart based on the selected option."""
         selected_option = self.segmented_button_var.get()
         print(f"Showing chart for option: {selected_option}")
 
