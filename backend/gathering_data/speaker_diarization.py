@@ -16,9 +16,10 @@ MODEL_PRETRAINED = "pyannote/speaker-diarization-3.0"
 WHISPER_VERSION = "base"
 LANGUAGE = "en"
 USE_AUTH_TOKEN = "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"
+CSV_DIR = '../../static/csv/'
 RAW_AUDIO_FILE_DIR = os.path.join("files", "raw_audio.wav")
 CLEAN_AUDIO_FILE_DIR = os.path.join("files", "clean_audio.wav")
-INPUT_CSV_FILE_DIR = os.path.join("files", "interview_links.csv")
+INPUT_CSV_FILE_DIR = os.path.join(CSV_DIR, "interview_links.csv")
 OUTPUT_CSV_FILE_DIR = os.path.join("files", "transcripts.csv")
 
 
@@ -28,19 +29,26 @@ def download_audio(url, output_path):
     :param url: str, YouTube video URL.
     :param output_path: str, Output path to save the downloaded audio.
     """
-    ydl_opts = {
-        "format": BEST_AUDIO_FORMAT,
-        "postprocessors": [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": PREFERRED_CODEC,
-            "preferredquality": PREFERRED_QUALITY,
-        }],
-        "outtmpl": output_path[:-4],
-    }
+    video_id = url.split('=')[-1]
+    output_filename = os.path.join(output_path, f"{video_id}.wav")
+    if not os.path.exists(output_filename):  # Check if file already exists
+        ydl_opts = {
+            "format": BEST_AUDIO_FORMAT,
+            "postprocessors": [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": PREFERRED_CODEC,
+                "preferredquality": PREFERRED_QUALITY,
+            }],
+            "outtmpl": output_filename[:-4],
+        }
 
-    with yt_dlp.YoutubeDL(ydl_opts) as youtube_dl:
-        youtube_dl.download([url])
-    print(f"Audio downloaded and saved to {output_path}.")
+        with yt_dlp.YoutubeDL(ydl_opts) as youtube_dl:
+            youtube_dl.download([url])
+        print(f"Audio downloaded and saved to {output_filename}.")
+    else:
+        print(f"Audio already downloaded: {output_filename}")
+
+    return output_filename
 
 
 def seconds_to_milliseconds(seconds):
@@ -73,8 +81,6 @@ def apply_diarization(video_url, audio_file, pipeline):
     :param pipeline: Pipeline, diarization model
     :return: Pipeline, diarization results
     """
-    download_audio(video_url, audio_file)
-
     print("Applying diarization...")
     diarization = pipeline(audio_file)
     print("Diarization completed.")
@@ -115,6 +121,7 @@ def remove_temp_files(files):
         if os.path.exists(file):
             os.remove(file)
 
+from tqdm import tqdm
 
 def main():
     # Load models
@@ -124,11 +131,23 @@ def main():
     # Load input .csv file
     df = pd.read_csv(INPUT_CSV_FILE_DIR, delimiter=";")
 
-    for _, row in df.iterrows():
+    processed_files = set()  # Keep track of already processed files
+    if os.path.exists(OUTPUT_CSV_FILE_DIR):
+        with open(OUTPUT_CSV_FILE_DIR, 'r') as file:
+            for line in file:
+                name = line.split('|')[0]
+                processed_files.add(name)
+
+    for _, row in tqdm(df.iterrows(), total=df.shape[0], desc="Processing Interviews"):
         name, youtube_link = row["name"], row["interview_link"]
+        if name in processed_files:
+            print(f"Skipping already processed interview: {name}")
+            continue
 
         # Apply diarization
-        diarization_results = apply_diarization(youtube_link, RAW_AUDIO_FILE_DIR, diarization_model)
+
+        raw_audio_file = download_audio(youtube_link, RAW_AUDIO_FILE_DIR)
+        diarization_results = apply_diarization(youtube_link, raw_audio_file, diarization_model)
 
         # Load audio file
         audio = AudioSegment.from_file(RAW_AUDIO_FILE_DIR)
@@ -148,7 +167,8 @@ def main():
         sorted_intervals = sorted(max_intervals, key=lambda x: x[0])
 
         # Segment out the parts of the audio where the selected speaker is talking
-        segments = [audio[start:end] for start, end in sorted_intervals]
+        segments = [audio[start:end] for start, end in tqdm(sorted_intervals, desc=f"Processing Audio Segments for {name}")]  # Add progress bar for audio segment processing
+
 
         # Combine segments or handle them individually
         combined = sum(segments[1:], segments[0])
