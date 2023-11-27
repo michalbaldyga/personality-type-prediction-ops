@@ -64,7 +64,7 @@ class LinkFrame(ctk.CTkFrame):
             self.pack_forget()
 
             # Open the PredictFrame
-            self.predict_frame = PredictFrame(self.master, show_link_frame, method)
+            self.predict_frame = PredictFrame(self.master, show_link_frame, method, None)
             self.predict_frame.pack_propagate(False)
             self.predict_frame.pack(pady=(50, 10))
         else:
