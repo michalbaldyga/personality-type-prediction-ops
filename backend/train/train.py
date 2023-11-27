@@ -1,3 +1,5 @@
+import os
+
 from datasets import ClassLabel, Dataset
 from transformers import AutoTokenizer, DataCollatorWithPadding, \
     AutoModelForSequenceClassification, TrainingArguments, Trainer
@@ -5,12 +7,22 @@ import evaluate
 import numpy as np
 import pandas as pd
 
-COINS_NUMBER = 9
+COINS_NUMBER = 11
 VALUES_PER_COIN = 2
-COINS = [["OO", "DD"], ["Oi", "Oe"], ["Di", "De"],
-         ["S", "N"], ["F", "T"], ["Sleep", "Play"],
-         ["Consume", "Blast"], ["Fem-S", "Mas-S"],
-         ["Fem-De", "Mas-De"]]
+CSV_DIR = "../../static/csv/"
+CSV_WITH_COINS = os.path.join(CSV_DIR, "records_cleaned_processed.csv")
+CSV_WITH_TRANSCRIPTS = os.path.join(CSV_DIR, "transcripts.csv")
+COINS = {'Human Needs_Observer': ["Oe", "Oi"],
+         'Human Needs_Decider': ["De", "Di"],
+         'Human Needs_Preferences': ["DD", "OO"],
+         'Letter_Observer': ["S", "N"],
+         'Letter_Decider': ["F", "T"],
+         'Animal_Energy Animal': ["Play", "Sleep"],
+         'Animal_Info Animal': ["Consume", "Blast"],
+         'Animal_Dominant Animal': ["Info", "Energy"],
+         'Animal_Introverted vs Extraverted': ["Extro", "Intro"],
+         'Sexual Modality_Sensory': ["M", "F"],
+         'Sexual Modality_Extraverted Decider': ["M", "F"]}
 
 
 def load_dataset_from_csv(csv_path):
@@ -47,16 +59,45 @@ def calculate_coins_indexes(coin_col):
             changes_cnt = 0
     coins_indexes.append(idx + 1)
     return coins_indexes
- 
+
 
 # Load dataset
-dataset = load_dataset_from_csv("../../datasets/data_to_train_test0811.csv")
-coins_indexes = [0] + calculate_coins_indexes(dataset['label'])
+df_coins = pd.read_csv(CSV_WITH_COINS, delimiter=',')
+df_transcripts = pd.read_csv(CSV_WITH_TRANSCRIPTS, delimiter='|')
 
-for (coin, idx) in zip(COINS, range(0, COINS_NUMBER)):
+for coin in COINS:
+
+    df_coin = df_coins[["name", coin]]
+    df_coin.dropna(inplace=True)
+
+    # Step 1: Count occurrences of each value in the 'coin' column
+    coin_counts = df_coin[coin].value_counts()
+
+    # Step 2: Find the difference in counts between the two classes
+    difference = coin_counts[COINS[coin][0]] - coin_counts[COINS[coin][1]]
+
+    # Step 3: Drop surplus rows from the class with more occurrences
+    if difference > 0:
+        # If 'OO' has more occurrences, drop the last 'difference' rows with 'DD'
+        df_cleaned = pd.concat([df_coin[df_coin[coin] == COINS[coin][0]].iloc[:-difference],
+                                df_coin[df_coin[coin] == COINS[coin][1]]])
+    elif difference < 0:
+        # If 'DD' has more occurrences, drop the last 'difference' rows with 'OO'
+        df_cleaned = pd.concat([df_coin[df_coin[coin] == COINS[coin][1]].iloc[:difference],
+                                df_coin[df_coin[coin] == COINS[coin][0]]])
+    else:
+        # If counts are already equal, no need to drop any rows
+        df_cleaned = df_coin.copy()
+
+    # Łączenie DataFrame'ów na podstawie kolumny "name"
+    merged_df = pd.merge(df_cleaned, df_transcripts, on="name", how="inner")
+
+    # Tworzenie słownika
+    result_dict = {"coin": list(merged_df[coin]),
+                   "transcript": list(merged_df["transcript"])}
 
     # Load current batch and labels
-    dataset_batch = Dataset.from_dict(dataset[coins_indexes[idx]:coins_indexes[idx+1]])
+    dataset_batch = Dataset.from_dict(result_dict)
     dataset_batch = dataset_batch.train_test_split(test_size=0.2)
 
     labels = ClassLabel(names=[coin[0], coin[1]])
@@ -72,7 +113,7 @@ for (coin, idx) in zip(COINS, range(0, COINS_NUMBER)):
     accuracy = evaluate.load("accuracy")
 
     # Train
-    model_output_dir = f"../release/model_{idx}"
+    model_output_dir = f"../release/model_{coin}"
     model = AutoModelForSequenceClassification.from_pretrained(
         "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id
     )
@@ -100,9 +141,10 @@ for (coin, idx) in zip(COINS, range(0, COINS_NUMBER)):
         compute_metrics=compute_metrics,
     )
 
+    print(f"Start training for {coin}")
     trainer.train()
     print(f"Training done for {coin}")
     trainer.save_model(model_output_dir)
-    print("Model saved")
+    print(f"{coin}_model saved")
     trainer.evaluate()
-    print("Evaluation done")
+    print(f"Evaluation done for {coin}")
