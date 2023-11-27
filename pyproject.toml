@@ -1,0 +1,73 @@
+[project]
+name = "ptp-ops"
+requires-python = ">=3.10"
+
+#===============================================================================
+
+[tool.ruff]
+target-version = "py310"
+line-length = 139
+select = [
+    "E",    # pycodestyle errors
+    "D",    # pydocstyle
+    "N",    # pep8-naming
+    "S",    # bandit
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "UP",   # pyupgrade
+    "I",    # isort
+    "NPY",  # NumPy
+    "B",    # flake8-bugbear
+    "YTT",  # flake8-2020
+    "Q",    # flake8-quotes
+    "A",    # flake8-builtins
+    "COM",  # flake8-commas
+    "C4",   # flake8-comprehensions
+    "INP",  # flake8-no-pep420
+    "PLW",  # pylint (add "PLR" in the future)
+    "PIE",  # misc lints
+    "TID",  # tidy imports
+    "ISC",  # implicit string concatenation
+    "TCH",  # type-checking imports
+    "T20",  # flake8-print
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "ARG",  # flake8-arguments
+    "ERA",  # flake8-eradicate
+    "PL",   # pylint
+    "RUF",  # ruff
+]
+unfixable = [
+    "ERA001",   # Found commented-out code
+    "F841",     # Local variable is assigned to but never used
+]
+
+fixable = [
+    "Q000",    # Single quotes found but double quotes prefferred
+    "I001",    # Import block is un-sorted or un-formatted
+    "COM812",  # Missing trailing comma
+    "F401",    # Imported but unused
+    "W292",    # No newline at end of file
+    "UP006",   # urzywańie typów a nie annotacji typów (tuple zamiast tp.Tuple)
+    "UP007",   # anotacji zamiast |
+    "UP032",   # Use f-string instead of `format` call
+    "UP015",    # Unnecessary open mode parameters
+    "RET503",   # Missing explicit return at the end of function albe to return non-None value
+    "RET504",   # Unnecessary assignment to `normalized` before `return` statement
+]
+
+ignore = ["INP001", "D100", "B905", "T201", "S113"]
+respect-gitignore = true
+exclude = [
+    ".git",
+    "__pycache__",
+    "venv",
+    ".venv",
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.ruff.flake8-import-conventions]
+[tool.ruff.flake8-import-conventions.aliases]
+typing = "tp"

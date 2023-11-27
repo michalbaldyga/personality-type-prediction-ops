@@ -1,167 +1,166 @@
 import os
-import re
+from typing import Optional, Dict
 
 import pandas as pd
 
-OPS_CODE_FORMAT = (r"([MF][MF]|[x?]{1,2})-([SNTF][ie]|[x?]{1,2})/([SNTF][ie]|[x?]{1,2})-([SPBC][SPBC]|[x?]{1,"
-                   r"2})/([SPBC]|[x?]{1,2})\(([SPBC]|[x?]{1,2})\)")
+from backend.utils import RECORDS_CSV
 
-WRONG_COGNITIVE_FORMAT = r"(S[ei]/[S][ei])|(N[ei]/[N][ei])|(F[ei]/[F][ei])|(T[ei]/[T][ei])"
+COINS_SPLIT = 3
+NUMBER_OF_LETTERS = 2
+FIRST = 0
+SECOND = 1
 
 
-def replace_question_mark(value):
+def replace_x_to_none(value: str) -> Optional[str]:
+    """Replace 'x' or 'xx' with None in OPS code values.
+
+    :param value: str, a string representing a part of the OPS code
+    :return: Optional[str], None if value is a placeholder, else the input value
     """
-    Replace placeholders for unknown or unspecified values in the OPS code with None.
+    return None if value in {"x", "xx"} else value
 
-    Parameters:
-    value (str): A string representing a part of the OPS code that might contain placeholders.
 
-    Returns:
-    str or None: Returns None if the input value is a placeholder, otherwise returns the input value.
+def get_human_needs_coins(observing_function: str, deciding_function: str) -> Dict[str, Optional[str]]:
+    """Determine human needs coins from OPS code observing and deciding functions.
+
+    :param observing_function: str, the observing function part of the OPS code
+    :param deciding_function: str, the deciding function part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Observer', 'Decider', and 'Preferences'
     """
-    return None if value in {'?', '??', 'x', 'xx'} else value
+    observing_function = replace_x_to_none(observing_function)
+    deciding_function = replace_x_to_none(deciding_function)
 
-
-def get_human_needs_coins(observing_function, deciding_function) -> dict:
-    """
-    Determine the human needs coins based on the observing and deciding functions from an OPS code.
-
-    Parameters:
-    observing_function (str): The observing function part of the OPS code.
-    deciding_function (str): The deciding function part of the OPS code.
-
-    Returns:
-    dict: A dictionary with keys 'Observer', 'Decider', and 'Preferences' representing human needs coins.
-    """
-    observing_function = replace_question_mark(observing_function)
-    deciding_function = replace_question_mark(deciding_function)
-
-    observer = None
-    decider = None
-    preferences = None
-
-    if observing_function and deciding_function:
-        observer = 'Oi' if observing_function in ['Si', 'Ni'] else 'Oe'
-        decider = 'Di' if deciding_function in ['Ti', 'Fi'] else 'De'
-        preferences = 'OO' if observing_function in ['Si', 'Se', 'Ni', 'Ne'] else 'DD'
+    observer = "Oi" if observing_function in ["Si", "Ni", "Oi"] else "Oe" if observing_function else None
+    decider = "Di" if deciding_function in ["Ti", "Fi", "Di"] else "De" if deciding_function else None
+    preferences = "OO" if observing_function in ["Si", "Se", "Ni", "Ne"] else "DD" if observing_function else None
 
     return {
-        'Observer': observer,
-        'Decider': decider,
-        'Preferences': preferences
+        "Observer": observer,
+        "Decider": decider,
+        "Preferences": preferences,
     }
 
 
-def get_letter_coins(observing, deciding) -> dict:
-    """
-    Extract the letter-based coins from the OPS code.
+def get_letter_coins(cognitive_function1: str, cognitive_function2: str) -> Dict[str, Optional[str]]:
+    """Extract the letter-based coins from the OPS code.
 
-    Parameters:
-    observing (str): The observing trait part of the OPS code.
-    deciding (str): The deciding trait part of the OPS code.
-
-    Returns:
-    dict: A dictionary with keys 'Observer' and 'Decider' representing the letter coins.
+    :param cognitive_function1: str, the first cognitive function part of the OPS code
+    :param cognitive_function2: str, the second cognitive function part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Observer' and 'Decider'
     """
-    observing = replace_question_mark(observing)
-    deciding = replace_question_mark(deciding)
+    cognitive_function1 = replace_x_to_none(cognitive_function1)
+    cognitive_function2 = replace_x_to_none(cognitive_function2)
+
+    sensual = ["Si", "Se"]
+    thinking = ["Ti", "Te"]
+    human_coins = ["Oi", "Oe", "Di", "De", "OO", "DD"]
+
+    observing = "S" if cognitive_function1 in sensual or cognitive_function2 in sensual else "N" if not (
+            cognitive_function1 in human_coins or cognitive_function2 in human_coins) else None
+    deciding = "T" if cognitive_function1 in thinking or cognitive_function2 in thinking else "F" if not (
+            cognitive_function1 in human_coins or cognitive_function2 in human_coins) else None
 
     return {
-        'Observer': observing,
-        'Decider': deciding,
+        "Observer": observing,
+        "Decider": deciding,
     }
 
 
-def get_animal_coins(first_two_animals, third_animal, fourth_animal) -> dict:
+def get_animal_coins(first_two_animals: str, fourth_animal: str) -> Dict[str, Optional[str]]:
+    """Extract the animal coins from the OPS code.
+
+    :param first_two_animals: str, the first two animals part of the OPS code
+    :param fourth_animal: str, the fourth animal part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Energy Animal', 'Info Animal', and 'Dominant Animal'
     """
-    Extract the animal coins from the OPS code.
+    first_animal = replace_x_to_none(first_two_animals[FIRST])
+    second_animal = replace_x_to_none(first_two_animals[SECOND])
+    fourth_animal = replace_x_to_none(fourth_animal)
 
-    Parameters:
-    first_two_animals (str): The first two animals part of the OPS code.
-    third_animal (str): The third animal part of the OPS code.
-    fourth_animal (str): The fourth animal part of the OPS code.
-
-    Returns:
-    dict: A dictionary with keys 'Energy Animal', 'Info Animal', and 'Dominant Animal' representing the animal coins.
-    """
-
-    first_animal = replace_question_mark(first_two_animals[0])
-    second_animal = replace_question_mark(first_two_animals[1])
-    fourth_animal = replace_question_mark(fourth_animal)
-    energy = None
-    info = None
-    dominant = None
-
-    if first_animal and second_animal and fourth_animal:
-        energy = "Sleep" if first_animal == "S" or second_animal == "S" else "Play"
-        info = "Consume" if first_animal == "C" or second_animal == "C" else "Blast"
-
-        dominant = "Info" if fourth_animal in ["S", "P"] else "Energy"
+    energy = "Sleep" if "S" in [first_animal, second_animal] else "Play" if first_animal and second_animal else None
+    info = "Consume" if "C" in [first_animal, second_animal] else "Blast" if first_animal and second_animal else None
+    dominant = "Info" if fourth_animal in ["S", "P"] else "Energy" if fourth_animal else None
+    intro_extro = "Extro" if fourth_animal in ["C", "S"] else "Intro" if fourth_animal else None
 
     return {
-        'Energy Animal': energy,
-        'Info Animal': info,
-        'Dominant Animal': dominant,
+        "Energy Animal": energy,
+        "Info Animal": info,
+        "Dominant Animal": dominant,
+        "Introverted vs Extraverted": intro_extro,
     }
 
 
-def get_sexual_modality_coins(modality) -> dict:
-    """
-    Extract the sexual modality coins from the OPS code.
+def get_sexual_modality_coins(modality: str) -> Dict[str, Optional[str]]:
+    """Extract the sexual modality coins from the OPS code.
 
-    Parameters:
-    modality (str): The modality part of the OPS code.
-
-    Returns:
-    dict: A dictionary with keys 'Sensory' and 'Extraverted Decider' representing the sexual modality coins.
+    :param modality: str, the modality part of the OPS code
+    :return: Dict[str, Optional[str]], dictionary with keys 'Sensory' and 'Extraverted Decider'
     """
-    sensory = replace_question_mark(modality[0])
-    decider = replace_question_mark(modality[1])
+    sensory = replace_x_to_none(modality[FIRST])
+    decider = replace_x_to_none(modality[SECOND])
     return {
-        'Sensory': sensory,
-        'Extraverted Decider': decider,
+        "Sensory": sensory,
+        "Extraverted Decider": decider,
     }
 
 
-def extract_coins_from_ops(ops: str) -> dict:
+def extract_coins_from_ops(ops: str) -> Dict[str, Dict[str, Optional[str]]]:
+    """Parse an OPS code string and extract all the coins from it.
+
+    :param ops: str, the OPS code string to be parsed
+    :return: Dict[str, Dict[str, Optional[str]]], a nested dictionary containing all extracted coins
     """
-    Parse an OPS code string and extract all the coins from it.
+    parts = ops.split("-")
+    if len(parts) != COINS_SPLIT:
+        raise ValueError(
+            f"Invalid or incomplete OPS string format: {ops} -- OPS code should have 3 parts separated by '-'.")
 
-    Parameters:
-    ops (str): The OPS code string to be parsed.
+    modalities = 0
+    modality = parts[modalities]
+    if not (len(modality) == NUMBER_OF_LETTERS and all(c in "MFx" for c in modality)):
+        raise ValueError(
+            f"Invalid or incomplete OPS string format: {ops} -- The first part must be two characters from 'M', 'F', "
+            f"'x'.")
 
-    Returns:
-    dict: A nested dictionary containing all extracted coins.
-    """
-    match = re.match(OPS_CODE_FORMAT, ops)
-    if not match:
-        raise ValueError(f"Invalid or incomplete OPS string format: {ops}")
+    cognitive = 1
+    second_part = parts[cognitive].split("/")
+    if len(second_part) != NUMBER_OF_LETTERS:
+        raise ValueError(
+            f"Invalid or incomplete OPS string format: {ops} -- The second part should have 2 sections separated by '/'.")
 
-    wrong_cognitive = re.search(WRONG_COGNITIVE_FORMAT, ops)
-    if wrong_cognitive:
-        raise ValueError(f"Invalid cognitive function in OPS code : {wrong_cognitive}")
+    observing, deciding = second_part
 
-    modality, observing, deciding, first_two_animals, third_animal, fourth_animal = match.groups()
+    if not ((len(observing) == NUMBER_OF_LETTERS and observing[FIRST] in "SNTFDOx" and
+             observing[SECOND] in "iex") or observing == "xx"):
+        raise ValueError(
+            f"Invalid or incomplete OPS string format: {ops} -- The first section of the second part is incorrect.")
 
-    _parsed_ops = {
-        'Human Needs': get_human_needs_coins(observing, deciding),
-        'Letter': get_letter_coins(observing, deciding),
-        'Animal': get_animal_coins(first_two_animals, third_animal, fourth_animal),
-        'Sexual Modality': get_sexual_modality_coins(modality)
+    if not ((len(deciding) == NUMBER_OF_LETTERS and deciding[FIRST] in "SNTFDOx" and
+             deciding[SECOND] in "iex") or deciding == "xx"):
+        raise ValueError(
+            f"Invalid or incomplete OPS string format: {ops} -- The second section of the second part is incorrect.")
+
+    animals = 2
+    third_part = parts[animals].split("/")
+    if len(third_part) != NUMBER_OF_LETTERS:
+        raise ValueError(
+            f"Invalid or incomplete OPS string format: {ops} -- The third part should have 2 sections separated by '/'.")
+
+    first_two_animals, third_and_fourth_animal = third_part
+
+    return {
+        "Human Needs": get_human_needs_coins(observing, deciding),
+        "Letter": get_letter_coins(observing, deciding),
+        "Animal": get_animal_coins(first_two_animals, third_and_fourth_animal[SECOND]),
+        "Sexual Modality": get_sexual_modality_coins(modality),
     }
 
-    return _parsed_ops
 
+def flatten_and_concatenate_keys(nested_dict: Dict[str, Dict[str, Optional[str]]]) -> Dict[str, Optional[str]]:
+    """Flatten a nested dictionary by concatenating parent and child keys.
 
-def flatten_and_concatenate_keys(nested_dict) -> dict:
-    """
-    Flatten a nested dictionary by concatenating parent and child keys.
-
-    Parameters:
-    nested_dict (dict): A nested dictionary with dictionaries as values.
-
-    Returns:
-    dict: A flattened dictionary with concatenated keys.
+    :param nested_dict: Dict[str, Dict[str, Optional[str]]], a nested dictionary with dictionaries as values
+    :return: Dict[str, Optional[str]], a flattened dictionary with concatenated keys
     """
     flattened_dict = {}
     for parent_key, child_dict in nested_dict.items():
@@ -171,83 +170,90 @@ def flatten_and_concatenate_keys(nested_dict) -> dict:
     return flattened_dict
 
 
-def get_path_to_csv() -> str:
-    """
-    Construct the file path to the CSV file containing the OPS codes.
-
-    Returns:
-    str: The file path to the CSV file, or None if the file does not exist.
-    """
-    csv_rel_path = os.path.join('..', '..', 'static', 'csv', 'records_update.csv')
-    script_dir = os.path.dirname(__file__)
-    csv_path = os.path.join(script_dir, csv_rel_path)
-
-    return csv_path if os.path.isfile(csv_path) else None
-
-
 def save_csv(df: pd.DataFrame, original_csv_path: str, suffix: str) -> str:
-    """
-    Save a DataFrame to a CSV file with a specified suffix added to the file name.
+    """Save a DataFrame to a CSV file with a specified suffix added to the file name.
 
-    Parameters:
-    df (pd.DataFrame): The DataFrame to be saved.
-    original_csv_path (str): The path of the original CSV file.
-    suffix (str): The suffix to add to the original file name.
-
-    Returns:
-    str: The file path to the newly saved CSV file.
+    :param df: pd.DataFrame, the DataFrame to be saved
+    :param original_csv_path: str, the path of the original CSV file
+    :param suffix: str, the suffix to add to the original file name
+    :return: str, the file path to the newly saved CSV file
     """
-    new_csv_name = os.path.splitext(os.path.basename(original_csv_path))[0] + suffix + '.csv'
+    old_name = 0
+    new_csv_name = os.path.splitext(os.path.basename(original_csv_path))[old_name] + suffix + ".csv"
     new_csv_path = os.path.join(os.path.dirname(original_csv_path), new_csv_name)
     df.to_csv(new_csv_path, index=False)
     return new_csv_path
 
 
 def clean_ops_data(csv_path: str) -> str:
-    """
-    Clean the OPS data by removing annotations and filtering for valid OPS codes.
+    """Clean the OPS data by removing annotations, replacing '?' with 'x', converting 'X' to lowercase.
 
-    Parameters:
-    csv_path (str): The file path to the CSV file that needs cleaning.
-
-    Returns:
-    str: The file path to the cleaned CSV file.
+    :param csv_path: str, the file path to the CSV file that needs cleaning
+    :return: str, the file path to the cleaned CSV file
     """
+    # Read the CSV file into a DataFrame
     df = pd.read_csv(csv_path)
+
+    # Remove annotations from the 'ops' column
     annotation_pattern = r" \[\d\]$"
-    df['ops'] = df['ops'].str.replace(annotation_pattern, '', regex=True)
-    cleaned_df = df[df['ops'].str.match(OPS_CODE_FORMAT, na=False)]
-    return save_csv(cleaned_df, csv_path, '_cleaned')
+    df["ops"] = df["ops"].str.replace(annotation_pattern, "", regex=True)
+
+    # Replace '?' with 'x' in the 'ops' column
+    df["ops"] = df["ops"].str.replace("?", "x", regex=False)
+
+    # Convert all 'X' to lowercase 'x' in the 'ops' column
+    df["ops"] = df["ops"].str.replace("X", "x")
+
+    # Remove parentheses from the 'ops' column
+    df["ops"] = df["ops"].str.replace("[()]", "", regex=True)
+
+    # Define or use an existing function to save the cleaned DataFrame
+    return save_csv(df, csv_path, "_cleaned")
 
 
-def process_ops_code_to_coins_in_csv(cleaned_csv_path: str):
-    """
-    Process the OPS codes in the cleaned CSV file and add extracted coins to the CSV.
+def process_ops_code_to_coins_in_csv(cleaned_csv_path: str) -> str:
+    """Process the OPS codes in the cleaned CSV file and add extracted coins.
 
-    Parameters:
-    cleaned_csv_path (str): The file path to the cleaned CSV file containing OPS codes.
-
-    Returns:
-    str: The file path to the processed CSV file with added coins.
+    :param cleaned_csv_path: str, the file path to the cleaned CSV file containing OPS codes
+    :return: str, the file path to the processed CSV file with coins added
     """
     cleaned_df = pd.read_csv(cleaned_csv_path)
+
+    # Initialize columns for coins if not already present
+    coin_columns = ["Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences",
+                    "Letter_Observer", "Letter_Decider",
+                    "Animal_Energy Animal", "Animal_Info Animal", "Animal_Dominant Animal",
+                    "Animal_Introverted vs Extraverted",
+                    "Sexual Modality_Sensory", "Sexual Modality_Extraverted Decider"]
+
+    for key in coin_columns:
+        if key not in cleaned_df.columns:
+            cleaned_df[key] = pd.Series(dtype="object")
+
+    # List to store indices of rows to delete
+    rows_to_delete = []
+
     for index, row in cleaned_df.iterrows():
         try:
-            ops_code = row['ops']
+            ops_code = row["ops"]
             parsed_ops = extract_coins_from_ops(ops_code)
             coins = flatten_and_concatenate_keys(parsed_ops)
             for key, value in coins.items():
-                cleaned_df.at[index, key] = value if value is not None else None
+                cleaned_df.at[index, key] = value
         except ValueError as e:
+            # Mark row for deletion in case of error
+            rows_to_delete.append(index)
             print(f"Error processing row {index}: {e}")
-    return save_csv(cleaned_df, cleaned_csv_path, '_processed')
+
+    # Drop the marked rows
+    cleaned_df.drop(rows_to_delete, inplace=True)
+
+    return save_csv(cleaned_df, cleaned_csv_path, "_processed")
 
 
 def main():
-    """
-    The main function to clean and process OPS data from a CSV file.
-    """
-    csv_path = get_path_to_csv()
+    """The main function to clean and process OPS data from a CSV file."""
+    csv_path = RECORDS_CSV
     if not csv_path:
         print("CSV path is not valid.")
         return
