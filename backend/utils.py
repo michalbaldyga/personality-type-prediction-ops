@@ -57,14 +57,15 @@ def rename_to_ascii_img(directory: str) -> None:
             print(f"Renamed '{filename}' to '{ascii_filename}'")
 
 
-def rename_to_ascii_csv(directory: str) -> None:
+def rename_to_ascii_csv(directory: str, delimiter: str) -> None:
     """Convert 'name' column entries in a CSV file to ASCII and save the changes.
 
     :param directory: str, the directory path of the CSV file.
+    :param delimiter: str, delimiter used in CSV file.
     """
-    df = pd.read_csv(directory)
+    df = pd.read_csv(directory, delimiter=delimiter)
     df["name"] = df["name"].apply(lambda name: unidecode.unidecode(name).replace(" ", "_"))
-    df.to_csv(directory, index=False)
+    df.to_csv(directory, index=False, sep=delimiter)
 
 
 def find_image_extremes(directory: str) -> tuple[tuple[int, int], tuple[int, int]]:
@@ -100,13 +101,14 @@ def replace_space_with_underscore_image(directory: str) -> None:
             print(f"Renamed '{filename}' to '{new_filename}'")
 
 
-def replace_space_with_underscore_csv(csv_file_path: str) -> None:
+def replace_space_with_underscore_csv(csv_file_path: str, delimiter: str) -> None:
     """Replace spaces with underscores in the 'name' column of a CSV file.
 
     :param csv_file_path: str, the path to the CSV file.
+    :param delimiter: str, delimiter used in CSV file.
     """
     try:
-        df = pd.read_csv(csv_file_path)
+        df = pd.read_csv(csv_file_path, delimiter=delimiter)
         if "name" in df.columns:
             df["name"] = df["name"].str.replace(" ", "_")
             df.to_csv(csv_file_path, index=False)
