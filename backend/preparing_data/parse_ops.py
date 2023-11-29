@@ -32,7 +32,7 @@ def get_human_needs_coins(observing_function: str, deciding_function: str) -> Di
 
     observer = "Oi" if observing_function in ["Si", "Ni", "Oi"] else "Oe" if observing_function else None
     decider = "Di" if deciding_function in ["Ti", "Fi", "Di"] else "De" if deciding_function else None
-    preferences = "OO" if observing_function in ["Si", "Se", "Ni", "Ne"] else "DD" if observing_function else None
+    preferences = "OO" if observing_function in ["Si", "Se", "Ni", "Ne", "OO"] else "DD" if observing_function else None
 
     return {
         "Observer": observer,
