@@ -15,7 +15,6 @@ from sklearn.model_selection import KFold
 from backend import utils
 from backend.utils import RECORDS_CLEANED_PROCESSED_CSV
 
-# TODO train other models and fix ruff and add comments
 # Set the mixed precision policy
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
