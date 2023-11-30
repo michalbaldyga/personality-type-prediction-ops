@@ -10,7 +10,9 @@ from datasets import ClassLabel, Dataset
 CSV_DIR = "../../static/csv/"
 CSV_WITH_COINS = os.path.join(CSV_DIR, "records_cleaned_processed.csv")
 CSV_WITH_TRANSCRIPTS = os.path.join(CSV_DIR, "transcripts_cleaned.csv")
-COINS = {
+COINS = {"Human Needs_Observer": ["Oe", "Oi"],
+         "Human Needs_Decider": ["De", "Di"],
+         "Human Needs_Preferences": ["DD", "OO"],
          "Letter_Observer": ["S", "N"],
          "Letter_Decider": ["F", "T"],
          "Animal_Energy Animal": ["Play", "Sleep"],
