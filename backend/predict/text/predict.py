@@ -15,6 +15,14 @@ def _get_path_to_model(coin: str) -> str:
 
 
 def predict(text: str) -> dict:
+    """Generate sentiment predictions for a given text across multiple ops coins.
+
+    This function utilizes a text classification model for sentiment analysis on text.
+    It predicts the sentiment for each specified coin and returns the results in a dictionary.
+
+    :param text: str, the input text for sentiment analysis.
+    :return: dict, a dictionary containing sentiment predictions for each specified coin.
+    """
     predictions_dict = {}
     for coin in COINS:
         try:
