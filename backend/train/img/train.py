@@ -1,18 +1,21 @@
 import os
+
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from imblearn.over_sampling import SMOTE
 from keras.applications import ResNet50
+from keras.callbacks import ModelCheckpoint
 from keras.layers import Dense, GlobalAveragePooling2D
 from keras.models import Model
+from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import KFold
-from keras.optimizers import RMSprop
-from keras.callbacks import ModelCheckpoint
-from imblearn.over_sampling import SMOTE
+
 from backend import utils
 from backend.utils import RECORDS_CLEANED_PROCESSED_CSV
 
+# TODO train other models and fix ruff and add comments
 # Set the mixed precision policy
 tf.keras.mixed_precision.set_global_policy("mixed_float16")
 
@@ -33,6 +36,17 @@ ops_data = pd.read_csv(RECORDS_CLEANED_PROCESSED_CSV)
 
 # Function to create and compile a model
 def create_model() -> Model:
+    """Creates a deep learning model based on the ResNet50 architecture with modifications for binary classification.
+
+    The model uses the ResNet50 as a base model with its top layer excluded. GlobalAveragePooling2D is applied to the output
+    of the base model. Then, a dense layer with 1024 neurons and ReLU activation is added. The final output layer is a dense layer
+    with a single neuron and sigmoid activation for binary classification. The base model layers are set as non-trainable.
+
+    An RMSprop optimizer wrapped with mixed precision LossScaleOptimizer is used for compiling the model. The model is compiled
+    with binary crossentropy loss and accuracy as the metric.
+
+    :return: Model, the compiled Keras model ready for training.
+    """
     base_model = ResNet50(weights="imagenet", include_top=False)
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
@@ -47,6 +61,7 @@ def create_model() -> Model:
 
     model.compile(optimizer=optimizer, loss="binary_crossentropy", metrics=["accuracy"])
     return model
+
 
 
 # Columns for different model training
@@ -103,7 +118,7 @@ for coin in coins_columns:
             y_col=coin,
             target_size=(224, 224),
             batch_size=32,
-            class_mode="binary"
+            class_mode="binary",
         )
 
         valid_generator_fold = train_datagen.flow_from_dataframe(
@@ -112,7 +127,7 @@ for coin in coins_columns:
             y_col=coin,
             target_size=(224, 224),
             batch_size=32,
-            class_mode="binary"
+            class_mode="binary",
         )
 
         # Create a new model for each coin
@@ -130,6 +145,6 @@ for coin in coins_columns:
             validation_steps=len(valid_df) // 32,
             callbacks=[checkpoint],
             use_multiprocessing=True,
-            workers=32
+            workers=32,
 
         )
