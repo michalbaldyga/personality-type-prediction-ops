@@ -3,7 +3,6 @@ import webbrowser
 from tkinter import filedialog
 
 import customtkinter as ctk
-from chart_frame import ChartFrame
 
 
 class PredictFrame(ctk.CTkFrame):
@@ -16,7 +15,6 @@ class PredictFrame(ctk.CTkFrame):
         segmented_button (ctk.CTkSegmentedButton): Segmented button for selecting different options.
         selected_label (ctk.CTkLabel): Label to display the selected option.
         save_button (ctk.CTkButton): Button for saving the prediction data to a file.
-        show_chart_button (ctk.CTkButton): Button for showing a chart based on the selected option.
         hyperlink_label (ctk.CTkLabel): Hyperlink label to open a web browser.
     """
 
@@ -63,18 +61,12 @@ class PredictFrame(ctk.CTkFrame):
                                          height=40, font=("Arial", 14))
         self.save_button.pack(side="left", padx=10)
 
-        # Show chart button
-        self.show_chart_button = ctk.CTkButton(button_frame, text="Show chart", command=self.show_chart, width=100,
-                                               height=40,
-                                               font=("Arial", 14))
-        self.show_chart_button.pack(side="right", padx=10)
-
         # Set default value to "Human" and update the label
         self.segmented_button_var.set(coins[0])
         self.segmented_button_callback(coins[0])
 
         # Hyperlink at the bottom, centered
-        self.hyperlink_label = ctk.CTkLabel(self, text="Find your twin and analyze the type", font=("Arial", 14),
+        self.hyperlink_label = ctk.CTkLabel(self, text="OPS Type Analyzer", font=("Arial", 14),
                                             cursor="hand2",
                                             text_color="#1F6AA5")
         self.hyperlink_label.bind("<Button-1>", lambda _: self.open_browser(
@@ -220,16 +212,3 @@ class PredictFrame(ctk.CTkFrame):
         self.selected_label.configure(text=text)
 
         return cat, val
-
-    def show_chart(self):
-        """Show a chart based on the selected option."""
-        selected_option = self.segmented_button_var.get()
-        print(f"Showing chart for option: {selected_option}")
-
-        # Retrieve data based on the selected option
-        categories, values = self.segmented_button_callback(selected_option)
-
-        # Create and pack the ChartFrame with the provided data
-        self.chart_frame = ChartFrame(self, categories, values, selected_option)
-        self.chart_frame.place(in_=self, relwidth=1, relheight=1)
-        self.chart_frame.lift()

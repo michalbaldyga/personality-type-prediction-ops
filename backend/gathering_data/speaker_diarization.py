@@ -6,6 +6,7 @@ from urllib.parse import urlparse, parse_qs
 
 import pandas as pd
 import torch
+import time
 import whisper
 import yt_dlp
 from pyannote.audio import Pipeline
@@ -29,6 +30,7 @@ RETRY_DELAY = 10
 MAX_RETRIES = 5
 
 
+RETRY_DELAY=5
 def download_audio(url):
     """Download audio from a given URL and save it to the specified output path.
 
@@ -40,7 +42,6 @@ def download_audio(url):
         video_id = parsed_url.path[1:]  # Remove the leading '/'
     else:
         video_id = parse_qs(parsed_url.query)['v'][0]
-
     output_filename = os.path.join(RAW_AUDIO_FILE_DIR, f"{video_id}.wav")
     if not os.path.exists(output_filename):
         retry_count = 0
@@ -151,17 +152,24 @@ def main(machine_number, total_machines):
 
     # Load input .csv file
     df = pd.read_csv(INPUT_CSV_FILE_DIR, delimiter=";")
-    rows_per_machine = len(df) // total_machines
-    start_index = machine_number * rows_per_machine
-    end_index = (machine_number + 1) * rows_per_machine if machine_number != total_machines - 1 else len(df)
-    df_subset = df.iloc[start_index:end_index]
 
-    processed_files = set()  # Keep track of already processed files
+    # Check which interviews have already been processed
+    processed_files = set()
     if os.path.exists(OUTPUT_CSV_FILE_DIR):
         with open(OUTPUT_CSV_FILE_DIR, 'r') as file:
             for line in file:
                 name = line.split('|')[0]
                 processed_files.add(name)
+
+    # Filter out already processed interviews
+    df_unprocessed = df[~df['name'].isin(processed_files)]
+
+    # Split the remaining unprocessed interviews among machines
+    rows_per_machine = len(df_unprocessed) // total_machines
+    start_index = machine_number * rows_per_machine
+    end_index = (machine_number + 1) * rows_per_machine if machine_number != total_machines - 1 else len(df_unprocessed)
+    df_subset = df_unprocessed.iloc[start_index:end_index]
+
 
     for _, row in tqdm(df_subset.iterrows(), total=df_subset.shape[0], desc="Processing Interviews"):
         name, youtube_link = row["name"], row["interview_link"]
@@ -183,6 +191,10 @@ def main(machine_number, total_machines):
             start, end = seconds_to_milliseconds(turn.start), seconds_to_milliseconds(turn.end)
             speaker_timestamps[speaker].append((start, end))
 
+        if not speaker_timestamps:
+            print(f"Skipping empty speaker timestamp")
+            continue;
+
         # Find the speaker with the maximum speaking time
         max_speaker = max(speaker_timestamps, key=lambda x: sum(stop - start for start, stop in speaker_timestamps[x]))
 
@@ -193,6 +205,7 @@ def main(machine_number, total_machines):
 
         # Segment out the parts of the audio where the selected speaker is talking
         segments = [audio[start:end] for start, end in sorted_intervals]
+
 
         # Combine segments or handle them individually
         combined = sum(segments[1:], segments[0])
@@ -212,7 +225,7 @@ def main(machine_number, total_machines):
             outfile.write(f"{name}|{result.get('text')}\n")
 
         # Remove unnecessary files
-        remove_temp_files([clean_audio_file])
+        remove_temp_files([clean_audio_file, raw_audio_file])
 
 
 if __name__ == "__main__":
