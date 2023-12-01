@@ -5,6 +5,8 @@ import tensorflow as tf
 from keras.utils.image_utils import img_to_array, load_img
 from PIL import Image
 
+from backend.utils import CLASS_MAPPINGS
+
 
 def load_and_preprocess_image(img_path, target_size=(224, 224), save_preprocessed=True,
                               save_path="preprocessed_image.jpg"):
@@ -42,20 +44,17 @@ def predict_with_model(model, img_path):
     return np.array([probability_of_class_0, probability_of_class_1])
 
 
-# Define columns representing different model predictions.
-coins_columns = [
-    "Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences",
-    "Letter_Observer", "Letter_Decider", "Animal_Energy Animal",
-    "Animal_Info Animal", "Animal_Dominant Animal",
-    "Animal_Introverted vs Extraverted", "Sexual Modality_Sensory",
-    "Sexual Modality_Extraverted Decider",
-]
-
 # Specify the path to the input image.
 INPUT_IMG_DIRECTORY = os.path.join("..", "..", "..", "static", "img", "input")
 img = os.path.join(INPUT_IMG_DIRECTORY, "image.jpg")
 
-for coin in coins_columns:
+for coin in CLASS_MAPPINGS:
     model = tf.keras.models.load_model(f"model_{coin}.h5")
     class_probabilities = predict_with_model(model, img)
-    print(f"{coin}: Class 0: {class_probabilities[0] * 100:.2f}%, Class 1: {class_probabilities[1] * 100:.2f}%")
+
+    # Interpret probabilities based on mapping
+    label_0, label_1 = list(CLASS_MAPPINGS[coin].keys())
+    probability_label_0 = class_probabilities[0] * 100
+    probability_label_1 = class_probabilities[1] * 100
+
+    print(f"{coin}: {label_0}: {probability_label_0:.2f}%, {label_1}: {probability_label_1:.2f}%")
