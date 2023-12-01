@@ -3,7 +3,7 @@ from typing import Optional, Dict
 
 import pandas as pd
 
-from backend.utils import RECORDS_CSV
+from backend.utils import RECORDS_CSV, COINS_COLUMNS
 
 COINS_SPLIT = 3
 NUMBER_OF_LETTERS = 2
@@ -219,14 +219,7 @@ def process_ops_code_to_coins_in_csv(cleaned_csv_path: str) -> str:
     """
     cleaned_df = pd.read_csv(cleaned_csv_path)
 
-    # Initialize columns for coins if not already present
-    coin_columns = ["Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences",
-                    "Letter_Observer", "Letter_Decider",
-                    "Animal_Energy Animal", "Animal_Info Animal", "Animal_Dominant Animal",
-                    "Animal_Introverted vs Extraverted",
-                    "Sexual Modality_Sensory", "Sexual Modality_Extraverted Decider"]
-
-    for key in coin_columns:
+    for key in COINS_COLUMNS:
         if key not in cleaned_df.columns:
             cleaned_df[key] = pd.Series(dtype="object")
 
