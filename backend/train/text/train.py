@@ -67,12 +67,11 @@ df_transcripts = pd.read_csv(CSV_WITH_TRANSCRIPTS, delimiter="|")
 
 for coin in COINS:
     df_coin = df_coins[["name", coin]]
-    df_cleaned = preprocess_coins_dataframe(df_coin, coin)
+    merged_df = pd.merge(df_coin, df_transcripts, on="name", how="inner")
+    df_cleaned = preprocess_coins_dataframe(merged_df, coin)
 
-    merged_df = pd.merge(df_cleaned, df_transcripts, on="name", how="inner")
-
-    data_dict = {"label": list(merged_df[coin]),
-                 "text": list(merged_df["transcript"])}
+    data_dict = {"label": list(df_cleaned[coin]),
+                 "text": list(df_cleaned["transcript"])}
 
     # Load current batch and labels
     dataset_batch = Dataset.from_dict(data_dict)
