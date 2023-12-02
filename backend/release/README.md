@@ -8,7 +8,7 @@ The models can be found on[ **google drive (ref link)]()** and after downloading
 The models are organized into two separate subdirectories:
 
 - `img/`: Contains models trained for image-based personality type prediction.
-- `text/`: Houses models trained for text-based personality type prediction.
+- `text/`: Contains models trained for text-based personality type prediction.
 
 ## Accessing Models
 
