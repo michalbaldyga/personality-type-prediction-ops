@@ -14,10 +14,11 @@ from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import KFold
 
 from backend import utils
-from backend.utils import CLASS_MAPPINGS, COINS_COLUMNS, MODEL_IMG_ACCURACY_DIR, RECORDS_CLEANED_PROCESSED_CSV
+from backend.utils import CLASS_MAPPINGS, COINS_COLUMNS, RECORDS_CLEANED_PROCESSED_CSV
 
 # Directory for improved quality images
 improved_quality_directory = os.path.join("..", "..", "..", "static", "img", "improved_quality")
+model_img_accuracy_dir = os.path.join("..", "..", "..", "static", "csv", "model_img_accuracies.csv")
 model_directory = os.path.join("..", "..", "release", "img")
 ops_data = pd.read_csv(RECORDS_CLEANED_PROCESSED_CSV)
 
@@ -173,7 +174,7 @@ def main():
             # Load the best model from this fold
             best_fold_model = tf.keras.models.load_model(temp_model_path)
             loss, accuracy = best_fold_model.evaluate(valid_generator_fold, steps=len(valid_df) // 32)
-            logging.info(f"Fold {train_index + 1} completed for {coin} with accuracy {accuracy}")
+            logging.info(f"Fold {fold_counter} completed for {coin} with accuracy {accuracy}")
 
             # If this fold's accuracy is the best so far for the coin, update the best_accuracy and save the model
             if accuracy > best_accuracy_for_coin:
@@ -199,7 +200,7 @@ def main():
     # Convert results to a DataFrame and save as CSV
     results_df = pd.DataFrame(results)
 
-    results_df.to_csv(MODEL_IMG_ACCURACY_DIR, index=False)
+    results_df.to_csv(model_img_accuracy_dir, index=False)
     logging.info("Training completed for all coins. Results saved.")
 
 

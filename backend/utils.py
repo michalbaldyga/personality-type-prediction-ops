@@ -16,8 +16,6 @@ RECORDS_CSV = os.path.join(STATIC_CSV_DIR, "records.csv")
 RECORDS_CLEANED_CSV = os.path.join(STATIC_CSV_DIR, "records_cleaned.csv")
 RECORDS_CLEANED_PROCESSED_CSV = os.path.join(STATIC_CSV_DIR, "records_cleaned_processed.csv")
 
-MODEL_IMG_ACCURACY_DIR = os.path.join(STATIC_CSV_DIR, "model_img_accuracies.csv")
-
 # Updated mapping of classes for each binary coin
 CLASS_MAPPINGS = {
     "Human Needs_Observer": {"Oe": 0, "Oi": 1},
