@@ -1,5 +1,4 @@
 import os
-
 import numpy as np
 import tensorflow as tf
 from keras.utils.image_utils import img_to_array, load_img
@@ -8,53 +7,42 @@ from PIL import Image
 from backend.utils import CLASS_MAPPINGS
 
 
-def load_and_preprocess_image(img_path, target_size=(224, 224), save_preprocessed=True,
-                              save_path="preprocessed_image.jpg"):
-    """Loads an image from a specified path and preprocesses it for model prediction.
-
-    :param img_path: str, the path to the image file.
-    :param target_size: tuple, the target size to which the image is resized. Default is (224, 224).
-    :param save_preprocessed: bool, whether to save the preprocessed image. Default is False.
-    :param save_path: str, the path where the preprocessed image will be saved. Default is 'preprocessed_image.jpg'.
-    :return: np.ndarray, the preprocessed image array.
-    """
+def load_and_preprocess_image(img_path, target_size=(224, 224)):
     img = load_img(img_path, target_size=target_size)
     img_array = img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
     img_array /= 255.  # Rescale by 1/255
-
-    if save_preprocessed:
-        # Convert array back to image
-        processed_img = Image.fromarray((img_array[0] * 255).astype("uint8"))
-        processed_img.save(save_path)
-
     return img_array
 
 
 def predict_with_model(model, img_path):
-    """Predicts class probabilities for an image using a given model.
-
-    :param model: tf.keras.models.Model, the trained TensorFlow/Keras model used for prediction.
-    :param img_path: str, the path to the image file for which the prediction is to be made.
-    :return: np.ndarray, an array containing the probabilities of the image belonging to class 0 and class 1.
-    """
-    img_array = load_and_preprocess_image(img_path, save_preprocessed=True, save_path="preprocessed_image.jpg")
-    probability_of_class_1 = model.predict(img_array)[0, 0]
-    probability_of_class_0 = 1 - probability_of_class_1
-    return np.array([probability_of_class_0, probability_of_class_1])
+    img_array = load_and_preprocess_image(img_path)
+    return model.predict(img_array)[0]
 
 
 # Specify the path to the input image.
-INPUT_IMG_DIRECTORY = os.path.join("..", "..", "..", "static", "img", "input")
-img = os.path.join(INPUT_IMG_DIRECTORY, "image.jpg")
+input_img_directory = os.path.join("..", "..", "..", "static", "img", "input")
+img_path = os.path.join(input_img_directory, "image.jpg")  # Change 'image.jpg' to your image filename
+model_directory = "../../release/img/"
+# Initialize an empty dictionary to store the results.
+results = {}
 
-for coin in CLASS_MAPPINGS:
-    model = tf.keras.models.load_model(f"model_{coin}.h5")
-    class_probabilities = predict_with_model(model, img)
+for coin, mappings in CLASS_MAPPINGS.items():
+    model_path = os.path.join(model_directory, f"model_{coin}.h5")
+    model = tf.keras.models.load_model(model_path)
+    class_probabilities = predict_with_model(model, img_path)
 
-    # Interpret probabilities based on mapping
-    label_0, label_1 = list(CLASS_MAPPINGS[coin].keys())
-    probability_label_0 = class_probabilities[0] * 100
-    probability_label_1 = class_probabilities[1] * 100
+    # Assuming the first class in mappings is your positive class
+    positive_class_label = list(mappings.keys())[0]
+    negative_class_label = list(mappings.keys())[1]  # Assuming only two classes
 
-    print(f"{coin}: {label_0}: {probability_label_0:.2f}%, {label_1}: {probability_label_1:.2f}%")
+    probability_of_A = class_probabilities[0]
+    probability_of_B = 1 - probability_of_A
+
+    coin_results = [
+        {'label': positive_class_label, 'percent': f"{probability_of_A * 100:.1f}%"},
+        {'label': negative_class_label, 'percent': f"{probability_of_B * 100:.1f}%"}
+    ]
+
+    results[coin] = coin_results
+print(results)
