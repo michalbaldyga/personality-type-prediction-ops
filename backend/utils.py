@@ -20,17 +20,17 @@ MODEL_IMG_ACCURACY_DIR = os.path.join(STATIC_CSV_DIR, "model_img_accuracies.csv"
 
 # Updated mapping of classes for each binary coin
 CLASS_MAPPINGS = {
-    "Human Needs_Observer": {'Oe': 0, 'Oi': 1},
-    "Human Needs_Decider": {'De': 0, 'Di': 1},
-    "Human Needs_Preferences": {'DD': 0, 'OO': 1},
-    "Letter_Observer": {'S': 0, 'N': 1},
-    "Letter_Decider": {'F': 0, 'T': 1},
-    "Animal_Energy Animal": {'Sleep': 0, 'Play': 1},
-    "Animal_Info Animal": {'Consume': 0, 'Blast': 1},
-    "Animal_Dominant Animal": {'Energy': 0, 'Info': 1},
-    "Animal_Introverted vs Extraverted": {'Extro': 0, 'Intro': 1},
-    "Sexual Modality_Sensory": {'M': 0, 'F': 1},
-    "Sexual Modality_Extraverted Decider": {'M': 0, 'F': 1},
+    "Human Needs_Observer": {"Oe": 0, "Oi": 1},
+    "Human Needs_Decider": {"De": 0, "Di": 1},
+    "Human Needs_Preferences": {"DD": 0, "OO": 1},
+    "Letter_Observer": {"S": 0, "N": 1},
+    "Letter_Decider": {"F": 0, "T": 1},
+    "Animal_Energy Animal": {"Sleep": 0, "Play": 1},
+    "Animal_Info Animal": {"Consume": 0, "Blast": 1},
+    "Animal_Dominant Animal": {"Energy": 0, "Info": 1},
+    "Animal_Introverted vs Extraverted": {"Extro": 0, "Intro": 1},
+    "Sexual Modality_Sensory": {"M": 0, "F": 1},
+    "Sexual Modality_Extraverted Decider": {"M": 0, "F": 1},
 }
 # Columns for different model training
 COINS_COLUMNS = [
