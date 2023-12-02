@@ -3,11 +3,10 @@ import os
 import evaluate
 import numpy as np
 import pandas as pd
+from datasets import ClassLabel, Dataset
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding, Trainer, TrainingArguments
 
-from datasets import ClassLabel, Dataset
-
-CSV_DIR = "../../static/csv/"
+CSV_DIR = "../../../static/csv/"
 CSV_WITH_COINS = os.path.join(CSV_DIR, "records_cleaned_processed.csv")
 CSV_WITH_TRANSCRIPTS = os.path.join(CSV_DIR, "transcripts_cleaned.csv")
 COINS = {"Human Needs_Observer": ["Oe", "Oi"],
@@ -90,7 +89,7 @@ for coin in COINS:
     accuracy = evaluate.load("accuracy")
 
     # Train
-    model_output_dir = f"../release/model_{coin}"
+    model_output_dir = f"../../release/model_{coin}"
     model = AutoModelForSequenceClassification.from_pretrained(
         "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id,
     )
