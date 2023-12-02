@@ -16,6 +16,8 @@ RECORDS_CSV = os.path.join(STATIC_CSV_DIR, "records.csv")
 RECORDS_CLEANED_CSV = os.path.join(STATIC_CSV_DIR, "records_cleaned.csv")
 RECORDS_CLEANED_PROCESSED_CSV = os.path.join(STATIC_CSV_DIR, "records_cleaned_processed.csv")
 
+MODEL_IMG_ACCURACY_DIR = os.path.join(STATIC_CSV_DIR, "model_img_accuracies.csv")
+
 # Updated mapping of classes for each binary coin
 CLASS_MAPPINGS = {
     "Human Needs_Observer": {'Oe': 0, 'Oi': 1},
@@ -38,6 +40,7 @@ COINS_COLUMNS = [
     "Animal_Introverted vs Extraverted", "Sexual Modality_Sensory",
     "Sexual Modality_Extraverted Decider",
 ]
+
 
 def image_exists(row: pd.Series, directory: str) -> bool:
     """Check if an image file exists in a given directory based on a DataFrame row.
