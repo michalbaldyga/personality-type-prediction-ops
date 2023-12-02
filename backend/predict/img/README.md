@@ -1,39 +1,35 @@
-# Coin Classification System
+# Personality Type Prediction Using Images
+
+This project includes a script for predicting personality types based on images using pre-trained deep learning models. The predictions are made using models trained on the ResNet50 architecture and TensorFlow/Keras.
 
 ## Overview
-This Python script is designed to classify images of coins using pre-trained models. It processes an input image, applies a neural network model for each coin type, and outputs the probability of each class within that coin type. 
 
-## Dependencies
-- Python
-- TensorFlow
+The script loads a pre-trained model, preprocesses an input image, and predicts the class probabilities of that image for each classification category (referred to as 'coins').
+
+## Prerequisites
+
+- Python 3.8 or later
+- TensorFlow 2.x
 - Keras
 - NumPy
-- Pillow
 
-## Setup
-1. Ensure you have the required dependencies installed.
-2. Place your input images in the designated directory.
+Ensure you have the above libraries installed in your Python environment before running the script.
+
+
+## Prediction Process
+
+The prediction process is executed by running the script which performs the following steps:
+
+1. **Image Loading and Preprocessing**: Loads an input image, resizes it to the target size, and normalizes the pixel values.
+
+2. **Model Prediction**: Uses the pre-trained model to predict class probabilities for the input image.
+
+3. **Results Interpretation**: Interprets the predicted probabilities to determine the personality type for each coin category.
 
 ## Usage
-- Update the `img_path` variable in the script with the filename of your image.
-- Run the script to get classification results for each coin type in the image.
 
-## How It Works
-1. **Image Preprocessing**: The script loads an image, resizes it, and normalizes the pixel values.
-2. **Model Prediction**: It loads a pre-trained Keras model for each coin type and predicts the class probabilities.
-3. **Output**: The script outputs a dictionary with the predicted probabilities for each class within each coin type.
+To run the prediction script, navigate to the directory containing `predict.py` and execute:
 
-## Key Functions
-- `load_and_preprocess_image`: Loads and preprocesses the image.
-- `predict_with_model`: Predicts class probabilities using a given model and image.
+```bash
+python predict.py
 
-## Customization
-- Modify `CLASS_MAPPINGS` to adjust the classes and indices according to your model.
-- Change the target size in `load_and_preprocess_image` based on your model's input requirements.
-
-## Notes
-- Models named as `model_{coin}.h5` are expected for each coin type.
-- The script assumes a specific directory structure for storing images and models. Adjust these paths as needed.
-
-## Disclaimer
-- This script is designed for educational purposes and may require modifications for production use.
