@@ -25,6 +25,17 @@ This script enhances the quality of images using the GFPGAN model. It processes 
 - Targets images in `.jpg` format.
 - Outputs enhanced images to a designated directory.
 
+## Visualization of step by step preprocessing
+
+Below is a table showcasing a sample image from our dataset step by step preprocessed:
+
+| Image Description                      | Image                                                                 |
+|----------------------------------------|-----------------------------------------------------------------------|
+| Original                               | ![Image 1](../../../static/img/original/Amelie_Lune.jpg)              |
+| Resized                                | ![Image 2](../../../static/img/resized/Amelie_Lune.jpg)               |                   
+| Corrected orientation and cropped face | ![Image 3](../../../static/img/corrected_and_cropped/Amelie_Lune.jpg) |                  
+| Quality enhancement                    | ![Image 3](../../../static/img/improved_quality/Amelie_Lune.jpg)      |                  
+
 
 ## Installation
 
