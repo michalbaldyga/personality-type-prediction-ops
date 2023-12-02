@@ -4,9 +4,8 @@ This Python script specializes in parsing and processing Objective Personality S
 
 ## Features Overview
 
-- **Regex Patterns**: Utilizes regex patterns for validating OPS code formats and identifying incorrect cognitive functions.
+- **Data Cleaning**: Employs string manipulation techniques to ensure data integrity and accuracy by standardizing OPS code formats.
 - **Coin Extraction**: Implements multiple methods to extract detailed personality traits from OPS codes.
-- **Data Cleaning**: Includes robust data cleaning techniques to ensure data integrity and accuracy.
 - **Data Processing**: Efficiently processes OPS codes and integrates the extracted coins into the dataset.
 
 ## Detailed Method Descriptions
@@ -15,7 +14,6 @@ This Python script specializes in parsing and processing Objective Personality S
 
 - **Purpose**: Cleans OPS data in the CSV file by removing extraneous annotations and standardizing OPS code formats.
 - **Implementation**: 
-   - Removes annotations using regex patterns.
    - Replaces placeholder characters ('?', '??') with 'x'.
    - Converts uppercase 'X' to lowercase.
    - Strips parentheses and other non-essential characters.
