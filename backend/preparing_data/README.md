@@ -43,3 +43,6 @@ This Python script specializes in parsing and processing Objective Personality S
 2. Run the script to generate new CSV files with cleaned and processed data.
 
 This script is a valuable tool for researchers and analysts working with OPS data, offering a comprehensive way to extract and analyze personality traits encoded within OPS codes.
+
+## TODO
+Add samples
