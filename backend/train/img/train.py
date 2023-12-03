@@ -117,7 +117,7 @@ def main():
             lambda x: os.path.join(improved_quality_directory, x + ".jpg"))
 
         for train_index, test_index in fold.split(filtered_df):
-            logging.info(f"Training fold {train_index + 1}/{folds_number} for {coin}")
+            logging.info(f"Training fold {fold_counter}/{folds_number} for {coin}")
 
             train_df = filtered_df.iloc[train_index]
             valid_df = filtered_df.iloc[test_index]

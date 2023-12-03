@@ -1,7 +1,7 @@
 # Model Storage Directory
 
 This directory is dedicated to storing the best-found models for the Personality Type Prediction project. Models are categorized based on the type of data they process: images and text.
-The models can be found on[ **google drive (ref link)]()** and after downloading should be pasted inside the proper subdirectories.
+The models can be found on [drive](https://drive.google.com/drive/folders/1M2diX2yEI_gkp4RuheDjh4HYQrrbP1Gt?usp=sharing) and after downloading should be pasted inside the proper subdirectories.
 
 ## Directory Structure
 
