@@ -16,6 +16,29 @@ RECORDS_CSV = os.path.join(STATIC_CSV_DIR, "records.csv")
 RECORDS_CLEANED_CSV = os.path.join(STATIC_CSV_DIR, "records_cleaned.csv")
 RECORDS_CLEANED_PROCESSED_CSV = os.path.join(STATIC_CSV_DIR, "records_cleaned_processed.csv")
 
+# Updated mapping of classes for each binary coin
+CLASS_MAPPINGS = {
+    "Human Needs_Observer": {"Oe": 0, "Oi": 1},
+    "Human Needs_Decider": {"De": 0, "Di": 1},
+    "Human Needs_Preferences": {"DD": 0, "OO": 1},
+    "Letter_Observer": {"S": 0, "N": 1},
+    "Letter_Decider": {"F": 0, "T": 1},
+    "Animal_Energy Animal": {"Sleep": 0, "Play": 1},
+    "Animal_Info Animal": {"Consume": 0, "Blast": 1},
+    "Animal_Dominant Animal": {"Energy": 0, "Info": 1},
+    "Animal_Introverted vs Extraverted": {"Extro": 0, "Intro": 1},
+    "Sexual Modality_Sensory": {"M": 0, "F": 1},
+    "Sexual Modality_Extraverted Decider": {"M": 0, "F": 1},
+}
+# Columns for different model training
+COINS_COLUMNS = [
+    "Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences",
+    "Letter_Observer", "Letter_Decider", "Animal_Energy Animal",
+    "Animal_Info Animal", "Animal_Dominant Animal",
+    "Animal_Introverted vs Extraverted", "Sexual Modality_Sensory",
+    "Sexual Modality_Extraverted Decider",
+]
+
 
 def image_exists(row: pd.Series, directory: str) -> bool:
     """Check if an image file exists in a given directory based on a DataFrame row.
@@ -57,14 +80,15 @@ def rename_to_ascii_img(directory: str) -> None:
             print(f"Renamed '{filename}' to '{ascii_filename}'")
 
 
-def rename_to_ascii_csv(directory: str) -> None:
+def rename_to_ascii_csv(directory: str, delimiter: str) -> None:
     """Convert 'name' column entries in a CSV file to ASCII and save the changes.
 
     :param directory: str, the directory path of the CSV file.
+    :param delimiter: str, delimiter used in CSV file.
     """
-    df = pd.read_csv(directory)
+    df = pd.read_csv(directory, delimiter=delimiter)
     df["name"] = df["name"].apply(lambda name: unidecode.unidecode(name).replace(" ", "_"))
-    df.to_csv(directory, index=False)
+    df.to_csv(directory, index=False, sep=delimiter)
 
 
 def find_image_extremes(directory: str) -> tuple[tuple[int, int], tuple[int, int]]:
@@ -100,13 +124,14 @@ def replace_space_with_underscore_image(directory: str) -> None:
             print(f"Renamed '{filename}' to '{new_filename}'")
 
 
-def replace_space_with_underscore_csv(csv_file_path: str) -> None:
+def replace_space_with_underscore_csv(csv_file_path: str, delimiter: str) -> None:
     """Replace spaces with underscores in the 'name' column of a CSV file.
 
     :param csv_file_path: str, the path to the CSV file.
+    :param delimiter: str, delimiter used in CSV file.
     """
     try:
-        df = pd.read_csv(csv_file_path)
+        df = pd.read_csv(csv_file_path, delimiter=delimiter)
         if "name" in df.columns:
             df["name"] = df["name"].str.replace(" ", "_")
             df.to_csv(csv_file_path, index=False)

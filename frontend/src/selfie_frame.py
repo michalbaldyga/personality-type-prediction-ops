@@ -44,9 +44,9 @@ class SelfieFrame(ctk.CTkFrame):
         self.predict_button.pack(side="right", padx=10)
 
         # Default image
-        default_image_path = "uploading-icon.png"
+        default_image_path = "face_landmark.png"
         self.default_image = Image.open(default_image_path)
-        ctk_image = ctk.CTkImage(light_image=self.default_image, dark_image=self.default_image, size=(80, 80))
+        ctk_image = ctk.CTkImage(light_image=self.default_image, dark_image=self.default_image, size=(170, 170))
 
         # Image label
         self.image_label = ctk.CTkLabel(self, text="", image=ctk_image, font=("Arial", 14))

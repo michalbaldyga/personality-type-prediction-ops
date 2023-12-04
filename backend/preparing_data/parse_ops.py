@@ -1,9 +1,8 @@
 import os
-from typing import Optional, Dict
 
 import pandas as pd
 
-from backend.utils import RECORDS_CSV
+from backend.utils import COINS_COLUMNS, RECORDS_CSV
 
 COINS_SPLIT = 3
 NUMBER_OF_LETTERS = 2
@@ -11,7 +10,7 @@ FIRST = 0
 SECOND = 1
 
 
-def replace_x_to_none(value: str) -> Optional[str]:
+def replace_x_to_none(value: str) -> str | None:
     """Replace 'x' or 'xx' with None in OPS code values.
 
     :param value: str, a string representing a part of the OPS code
@@ -20,7 +19,7 @@ def replace_x_to_none(value: str) -> Optional[str]:
     return None if value in {"x", "xx"} else value
 
 
-def get_human_needs_coins(observing_function: str, deciding_function: str) -> Dict[str, Optional[str]]:
+def get_human_needs_coins(observing_function: str, deciding_function: str) -> dict[str, str | None]:
     """Determine human needs coins from OPS code observing and deciding functions.
 
     :param observing_function: str, the observing function part of the OPS code
@@ -32,7 +31,7 @@ def get_human_needs_coins(observing_function: str, deciding_function: str) -> Di
 
     observer = "Oi" if observing_function in ["Si", "Ni", "Oi"] else "Oe" if observing_function else None
     decider = "Di" if deciding_function in ["Ti", "Fi", "Di"] else "De" if deciding_function else None
-    preferences = "OO" if observing_function in ["Si", "Se", "Ni", "Ne"] else "DD" if observing_function else None
+    preferences = "OO" if observing_function in ["Si", "Se", "Ni", "Ne", "OO"] else "DD" if observing_function else None
 
     return {
         "Observer": observer,
@@ -41,7 +40,7 @@ def get_human_needs_coins(observing_function: str, deciding_function: str) -> Di
     }
 
 
-def get_letter_coins(cognitive_function1: str, cognitive_function2: str) -> Dict[str, Optional[str]]:
+def get_letter_coins(cognitive_function1: str, cognitive_function2: str) -> dict[str, str | None]:
     """Extract the letter-based coins from the OPS code.
 
     :param cognitive_function1: str, the first cognitive function part of the OPS code
@@ -66,7 +65,7 @@ def get_letter_coins(cognitive_function1: str, cognitive_function2: str) -> Dict
     }
 
 
-def get_animal_coins(first_two_animals: str, fourth_animal: str) -> Dict[str, Optional[str]]:
+def get_animal_coins(first_two_animals: str, fourth_animal: str) -> dict[str, str | None]:
     """Extract the animal coins from the OPS code.
 
     :param first_two_animals: str, the first two animals part of the OPS code
@@ -90,7 +89,7 @@ def get_animal_coins(first_two_animals: str, fourth_animal: str) -> Dict[str, Op
     }
 
 
-def get_sexual_modality_coins(modality: str) -> Dict[str, Optional[str]]:
+def get_sexual_modality_coins(modality: str) -> dict[str, str | None]:
     """Extract the sexual modality coins from the OPS code.
 
     :param modality: str, the modality part of the OPS code
@@ -104,7 +103,7 @@ def get_sexual_modality_coins(modality: str) -> Dict[str, Optional[str]]:
     }
 
 
-def extract_coins_from_ops(ops: str) -> Dict[str, Dict[str, Optional[str]]]:
+def extract_coins_from_ops(ops: str) -> dict[str, dict[str, str | None]]:
     """Parse an OPS code string and extract all the coins from it.
 
     :param ops: str, the OPS code string to be parsed
@@ -156,7 +155,7 @@ def extract_coins_from_ops(ops: str) -> Dict[str, Dict[str, Optional[str]]]:
     }
 
 
-def flatten_and_concatenate_keys(nested_dict: Dict[str, Dict[str, Optional[str]]]) -> Dict[str, Optional[str]]:
+def flatten_and_concatenate_keys(nested_dict: dict[str, dict[str, str | None]]) -> dict[str, str | None]:
     """Flatten a nested dictionary by concatenating parent and child keys.
 
     :param nested_dict: Dict[str, Dict[str, Optional[str]]], a nested dictionary with dictionaries as values
@@ -219,14 +218,7 @@ def process_ops_code_to_coins_in_csv(cleaned_csv_path: str) -> str:
     """
     cleaned_df = pd.read_csv(cleaned_csv_path)
 
-    # Initialize columns for coins if not already present
-    coin_columns = ["Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences",
-                    "Letter_Observer", "Letter_Decider",
-                    "Animal_Energy Animal", "Animal_Info Animal", "Animal_Dominant Animal",
-                    "Animal_Introverted vs Extraverted",
-                    "Sexual Modality_Sensory", "Sexual Modality_Extraverted Decider"]
-
-    for key in coin_columns:
+    for key in COINS_COLUMNS:
         if key not in cleaned_df.columns:
             cleaned_df[key] = pd.Series(dtype="object")
 
