@@ -37,25 +37,27 @@ def predict_with_model(model, img_path):
     return model.predict(img_array)[0]
 
 
-# Initialize an empty dictionary to store the results.
-results = {}
+def predict(image_url):
+    # Initialize an empty dictionary to store the results.
+    results = {}
 
-for coin, mappings in CLASS_MAPPINGS.items():
-    model_path = os.path.join(model_directory, f"model_{coin}.h5")
-    model = tf.keras.models.load_model(model_path)
-    class_probabilities = predict_with_model(model, img_path)
+    for coin, mappings in CLASS_MAPPINGS.items():
+        model_path = os.path.join(model_directory, f"model_{coin}.h5")
+        model = tf.keras.models.load_model(model_path)
+        class_probabilities = predict_with_model(model, image_url)
 
-    # Assuming the first class in mappings is your positive class
-    positive_class_label = list(mappings.keys())[0]
-    negative_class_label = list(mappings.keys())[1]  # Assuming only two classes
+        # Assuming the first class in mappings is your positive class
+        positive_class_label = list(mappings.keys())[0]
+        negative_class_label = list(mappings.keys())[1]  # Assuming only two classes
 
-    probability_of_a = class_probabilities[0]
-    probability_of_b = 1 - probability_of_a
+        probability_of_a = class_probabilities[0]
+        probability_of_b = 1 - probability_of_a
 
-    coin_results = [
-        {"label": positive_class_label, "percent": f"{probability_of_a * 100:.1f}%"},
-        {"label": negative_class_label, "percent": f"{probability_of_b * 100:.1f}%"},
-    ]
+        coin_results = [
+            {"label": positive_class_label, "percent": f"{probability_of_a * 100:.1f}%"},
+            {"label": negative_class_label, "percent": f"{probability_of_b * 100:.1f}%"},
+        ]
 
-    results[coin] = coin_results
-print(results)
+        results[coin] = coin_results
+
+    return results
