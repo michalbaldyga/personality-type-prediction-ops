@@ -10,7 +10,7 @@ COINS = ["Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences
 
 
 def _get_path_to_model(coin: str) -> str:
-    model_name = f"model_{coin}"
+    model_name = f"best_model_{coin}"
     return os.path.join(MODEL_DIR, model_name)
 
 
