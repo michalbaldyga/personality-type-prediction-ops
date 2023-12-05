@@ -3,7 +3,6 @@ import webbrowser
 from tkinter import filedialog
 
 import customtkinter as ctk
-from backend.predict.text.predict import predict as predict_text
 
 
 class PredictFrame(ctk.CTkFrame):
@@ -153,7 +152,7 @@ class PredictFrame(ctk.CTkFrame):
                        ["Intro", "Extro"], ["Fem_S", "Mas_S"],
                        ["Fem_De", "Mas_De"]]
 
-        results = predict_text(self.data)
+        results = self.data
         categories = []
         values = []
 

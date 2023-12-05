@@ -1,8 +1,7 @@
 import os
-import argparse
 import time
 from collections import defaultdict
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 import torch
 import whisper
@@ -18,11 +17,9 @@ MODEL_PRETRAINED = "pyannote/speaker-diarization-3.0"
 WHISPER_VERSION = "base"
 LANGUAGE = "en"
 USE_AUTH_TOKEN = "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"
-CSV_DIR = '../../static/csv/'
+CSV_DIR = "../../static/csv/"
 RAW_AUDIO_FILE_DIR = os.path.join("files", "audios")
 CLEAN_AUDIO_FILE_DIR = os.path.join("files", "clean_audios")
-INPUT_CSV_FILE_DIR = os.path.join(CSV_DIR, "interview_links.csv")
-OUTPUT_CSV_FILE_DIR = os.path.join("files", "transcripts.csv")
 RETRY_DELAY = 10
 MAX_RETRIES = 5
 
@@ -33,10 +30,10 @@ def download_audio(url):
     :param url: str, YouTube video URL.
     """
     parsed_url = urlparse(url)
-    if parsed_url.netloc == 'youtu.be':
+    if parsed_url.netloc == "youtu.be":
         video_id = parsed_url.path[1:]  # Remove the leading '/'
     else:
-        video_id = parse_qs(parsed_url.query)['v'][0]
+        video_id = parse_qs(parsed_url.query)["v"][0]
 
     output_filename = os.path.join(RAW_AUDIO_FILE_DIR, f"{video_id}.wav")
     if not os.path.exists(output_filename):
@@ -174,8 +171,8 @@ def get_transcript(url):
     combined = sum(segments[1:], segments[0])
 
     # Export the combined audio
-    video_id = raw_audio_file.split('/')[-1].replace('.wav', '')
-    clean_audio_file = os.path.join(CLEAN_AUDIO_FILE_DIR, f"clean_audio_{video_id}.wav")
+    video_id = raw_audio_file.split("/")[-1].replace(".wav", "")
+    clean_audio_file = f"{video_id}.wav"
     combined.export(clean_audio_file, format="wav")
 
     # Transcribe the cleaned audio
@@ -183,12 +180,9 @@ def get_transcript(url):
     result = whisper_model.transcribe(audio=clean_audio_file, language=LANGUAGE)
     print("Transcription completed.")
 
-    transcript = result.get('text')
+    transcript = result.get("text")
 
     # Remove unnecessary files
     remove_temp_files([clean_audio_file])
 
     return transcript
-
-#print(get_transcript(""))
-#https://www.youtube.com/watch?v=MOyfWUq_214&pp=ygUdd2hhdCBkb2VzIGNvcmV5IHRheWxvciB0aGluayA%3D
