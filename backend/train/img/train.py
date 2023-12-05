@@ -1,5 +1,6 @@
 import logging
 import os
+
 import pandas as pd
 import tensorflow as tf
 from keras.applications import ResNet50
@@ -9,6 +10,7 @@ from keras.models import Model
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import KFold
+
 from backend import utils
 from backend.utils import CLASS_MAPPINGS, COINS_COLUMNS, RECORDS_CLEANED_PROCESSED_CSV
 
@@ -45,22 +47,29 @@ def preprocess_coins_dataframe(df: pd.DataFrame, column_name: str) -> pd.DataFra
     :param column_name: str, the name of the column to be processed.
     :return: DataFrame, the preprocessed DataFrame with balanced counts for the specified values.
     """
-    df = df.dropna()
-
     value_counts = df[column_name].value_counts()
     min_count = value_counts.min()
 
     # Balancing the DataFrame
-    balanced_df = pd.concat([
+    return pd.concat([
         df[df[column_name] == 0].sample(min_count, random_state=42),
-        df[df[column_name] == 1].sample(min_count, random_state=42)
+        df[df[column_name] == 1].sample(min_count, random_state=42),
     ])
-
-    return balanced_df
 
 
 # Function to create and compile a model
 def create_model(train_base_model=False):
+    """Creates a deep learning model based on the ResNet50 architecture with modifications for binary classification.
+
+    The model uses the ResNet50 as a base model with its top layer excluded.
+    GlobalAveragePooling2D is applied to the output of the base model. Then, a dense layer with 1024 neurons and
+    ReLU activation is added. The final output layer is a dense layer with a single neuron and sigmoid activation
+    for binary classification. The base model layers are set as non-trainable. An RMSprop optimizer wrapped with
+    mixed precision LossScaleOptimizer is used for compiling the model. The model is compiled with binary
+    crossentropy loss and accuracy as the metric.
+
+    :return: Model, the compiled Keras model ready for training.
+    """
     base_model = ResNet50(weights="imagenet", include_top=False)
     x = base_model.output
     x = GlobalAveragePooling2D()(x)
@@ -80,6 +89,16 @@ def create_model(train_base_model=False):
 
 # Main function for training models
 def main():
+    """Main function for training models for personality type prediction using images.
+
+    This function sets up the mixed precision policy and GPU configuration, loads data,
+    defines class label mappings, creates a deep learning model based on ResNet50 architecture,
+    configures image data augmentation, and implements KFold cross-validation.
+
+    The training process involves balancing the dataset using SMOTE, creating a model for each
+    classification category (referred to as 'coins'), and training the model using the
+    preprocessed and augmented data. The best model for each category is saved for future use.
+    """
     train_datagen = ImageDataGenerator(
         rescale=1. / 255,
         rotation_range=20,
@@ -88,8 +107,8 @@ def main():
         horizontal_flip=True,
         fill_mode="nearest",
     )
-
-    fold = KFold(n_splits=5, shuffle=True, random_state=42)
+    num_of_folds = 5
+    fold = KFold(n_splits=num_of_folds, shuffle=True, random_state=42)
     results = []
 
     for coin in COINS_COLUMNS:
@@ -174,7 +193,7 @@ def main():
 
             if accuracy > best_accuracy_for_coin:
                 best_accuracy_for_coin = accuracy
-                if best_model_for_coin and fold_counter < 5:
+                if best_model_for_coin and fold_counter < num_of_folds:
                     os.remove(best_model_for_coin)
                 best_model_for_coin = temp_model_path
                 logging.info(f"New best model found for {coin} with accuracy: {accuracy}")
