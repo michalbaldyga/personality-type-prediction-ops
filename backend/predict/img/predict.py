@@ -2,14 +2,14 @@ import os
 
 import numpy as np
 import tensorflow as tf
-from keras.utils.image_utils import img_to_array, load_img
+from keras.utils import img_to_array, load_img
 
 from backend.utils import CLASS_MAPPINGS
 
 # Specify the path to the input image.
-input_img_directory = os.path.join("..", "..", "..", "static", "img", "input")
+input_img_directory = os.path.join("..", "..", "static", "img", "input")
 img_path = os.path.join(input_img_directory, "image.jpg")  # Change 'image.jpg' to your image filename
-model_directory = "../../release/img/"
+model_directory = "../../backend/release/img/"
 
 
 def load_and_preprocess_image(img_path, target_size=(224, 224)):
@@ -37,25 +37,52 @@ def predict_with_model(model, img_path):
     return model.predict(img_array)[0]
 
 
-# Initialize an empty dictionary to store the results.
-results = {}
+def predict(image_url):
+    # Initialize an empty dictionary to store the results.
+    results = {}
 
-for coin, mappings in CLASS_MAPPINGS.items():
-    model_path = os.path.join(model_directory, f"model_{coin}.h5")
-    model = tf.keras.models.load_model(model_path)
-    class_probabilities = predict_with_model(model, img_path)
+    for coin, mappings in CLASS_MAPPINGS.items():
+        model_path = os.path.join(model_directory, f"model_{coin}.h5")
+        model = tf.keras.models.load_model(model_path)
+        class_probabilities = predict_with_model(model, image_url)
 
-    # Assuming the first class in mappings is your positive class
-    positive_class_label = list(mappings.keys())[0]
-    negative_class_label = list(mappings.keys())[1]  # Assuming only two classes
+        # Assuming the first class in mappings is your positive class
+        positive_class_label = list(mappings.keys())[0]
+        negative_class_label = list(mappings.keys())[1]  # Assuming only two classes
 
-    probability_of_a = class_probabilities[0]
-    probability_of_b = 1 - probability_of_a
+        probability_of_a = class_probabilities[0]
+        probability_of_b = 1 - probability_of_a
 
-    coin_results = [
-        {"label": positive_class_label, "percent": f"{probability_of_a * 100:.1f}%"},
-        {"label": negative_class_label, "percent": f"{probability_of_b * 100:.1f}%"},
-    ]
+        coin_results = [
+            {"label": positive_class_label, "percent": f"{probability_of_a * 100:.1f}"},
+            {"label": negative_class_label, "percent": f"{probability_of_b * 100:.1f}"},
+        ]
 
-    results[coin] = coin_results
-print(results)
+        results[coin] = coin_results
+
+    final_results = __convert_results_to_proper_format(results)
+
+    print(final_results)
+    return final_results
+
+
+def __convert_results_to_proper_format(input_results):
+    output_results = []
+
+    for coin in input_results:
+        values = input_results[coin]
+
+        if coin == "Sexual Modality_Sensory":
+            percent_mas = values[0]['percent']
+            percent_fem = values[1]['percent']
+            output_results.append({'label': "Mas_S", 'percent': percent_mas})
+            output_results.append({'label': "Fem_S", 'percent': percent_fem})
+        elif coin == "Sexual Modality_Extraverted Decider":
+            percent_mas = values[0]['percent']
+            percent_fem = values[1]['percent']
+            output_results.append({'label': "Mas_De", 'percent': percent_mas})
+            output_results.append({'label': "Fem_De", 'percent': percent_fem})
+        else:
+            output_results.extend(values)
+
+    return output_results

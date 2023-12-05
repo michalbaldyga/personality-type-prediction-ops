@@ -18,16 +18,18 @@ class PredictFrame(ctk.CTkFrame):
         hyperlink_label (ctk.CTkLabel): Hyperlink label to open a web browser.
     """
 
-    def __init__(self, master, back_callback, method):
+    def __init__(self, master, back_callback, method, data):
         """Initialize the PredictFrame.
 
         :param master: tk.Tk or tk.Toplevel, The master widget.
         :param back_callback: function, The callback function to go back to the previous frame.
         :param method: str, The method used for prediction.
+        :param data: data (text/image) received from user.
         """
         super().__init__(master, width=400, height=300)
         self.back_callback = back_callback
         self.method = method
+        self.data = data
 
         coins, category_name = self.get_names()
 
@@ -124,35 +126,41 @@ class PredictFrame(ctk.CTkFrame):
         """Open a web browser with the specified URL."""
         webbrowser.open(url)
 
+    @staticmethod
+    def find_result(data, label):
+        for element in data:
+            if element['label'] == label:
+                return element['percent']
+        raise Exception("Invalid label")
+
+    def read_coin_results(self, data, coin_group):
+        result_coin1 = self.find_result(data, coin_group[0])
+        result_coin2 = self.find_result(data, coin_group[1])
+
+        if result_coin1 > result_coin2:
+            return coin_group[0], result_coin1
+        elif result_coin2 > result_coin1:
+            return coin_group[1], result_coin2
+        else:
+            return f"{coin_group[0]}/{coin_group[1]}", result_coin1
+
     def get_data(self):
         """Generate random data for the prediction."""
-        observer = "Oi"
-        decider = "Di"
-        preferences = "OO"
-        observing = "Si"
-        deciding = "Ti"
-        energy = "Sleep"
-        info = "Consume"
-        dominant = "Info"
-        intro_extro = "Extro"
-        sensory = "modality0"
-        ex_decider = "modality1"
+        coin_groups = [["Oi", "Oe"], ["Di", "De"], ["DD", "OO"],
+                       ["S", "N"], ["F", "T"], ["Sleep", "Play"],
+                       ["Consume", "Blast"], ["Info", "Energy"],
+                       ["Intro", "Extro"], ["Fem_S", "Mas_S"],
+                       ["Fem_De", "Mas_De"]]
 
-        rand1 = random.randint(55, 90)
-        rand2 = random.randint(55, 90)
-        rand3 = random.randint(55, 90)
-        rand4 = random.randint(55, 90)
-        rand5 = random.randint(55, 90)
-        rand6 = random.randint(55, 90)
-        rand7 = random.randint(55, 90)
-        rand8 = random.randint(55, 90)
-        rand9 = random.randint(55, 90)
-        rand10 = random.randint(55, 90)
-        rand11 = random.randint(55, 90)
+        results = self.data
+        categories = []
+        values = []
 
-        categories = [observer, decider, preferences, observing, deciding, energy, info, dominant, intro_extro, sensory,
-                      ex_decider]
-        values = [rand1, rand2, rand3, rand4, rand5, rand6, rand7, rand8, rand9, rand10, rand11]
+        for group in coin_groups:
+            cat, val = self.read_coin_results(results, group)
+
+            categories.append(cat.replace('_De', '').replace('_S', ''))
+            values.append(val)
 
         return categories, values
 

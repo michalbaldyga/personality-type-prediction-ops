@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from predict_frame import PredictFrame
-
+from backend.predict.text.predict import predict
 
 class StyledText(ctk.CTkFrame):
     """A styled text widget with customizable appearance.
@@ -124,9 +124,9 @@ class TextFrame(ctk.CTkFrame):
 
             # Hide the current frame
             self.pack_forget()
-
+            prediction_result = predict(custom_text)
             # Open the PredictFrame
-            self.predict_frame = PredictFrame(self.master, show_text_frame, method)
+            self.predict_frame = PredictFrame(self.master, show_text_frame, method, prediction_result)
             self.predict_frame.pack_propagate(False)
             self.predict_frame.pack(pady=(50, 10))
         else:
