@@ -2,14 +2,14 @@ import os
 
 import numpy as np
 import tensorflow as tf
-from keras.utils.image_utils import img_to_array, load_img
+from keras.utils import img_to_array, load_img
 
 from backend.utils import CLASS_MAPPINGS
 
 # Specify the path to the input image.
-input_img_directory = os.path.join("..", "..", "..", "static", "img", "input")
+input_img_directory = os.path.join("..", "..", "static", "img", "input")
 img_path = os.path.join(input_img_directory, "image.jpg")  # Change 'image.jpg' to your image filename
-model_directory = "../../release/img/"
+model_directory = "../../backend/release/img/"
 
 
 def load_and_preprocess_image(img_path, target_size=(224, 224)):
@@ -54,10 +54,35 @@ def predict(image_url):
         probability_of_b = 1 - probability_of_a
 
         coin_results = [
-            {"label": positive_class_label, "percent": f"{probability_of_a * 100:.1f}%"},
-            {"label": negative_class_label, "percent": f"{probability_of_b * 100:.1f}%"},
+            {"label": positive_class_label, "percent": f"{probability_of_a * 100:.1f}"},
+            {"label": negative_class_label, "percent": f"{probability_of_b * 100:.1f}"},
         ]
 
         results[coin] = coin_results
 
-    return results
+    final_results = __convert_results_to_proper_format(results)
+
+    print(final_results)
+    return final_results
+
+
+def __convert_results_to_proper_format(input_results):
+    output_results = []
+
+    for coin in input_results:
+        values = input_results[coin]
+
+        if coin == "Sexual Modality_Sensory":
+            percent_mas = values[0]['percent']
+            percent_fem = values[1]['percent']
+            output_results.append({'label': "Mas_S", 'percent': percent_mas})
+            output_results.append({'label': "Fem_S", 'percent': percent_fem})
+        elif coin == "Sexual Modality_Extraverted Decider":
+            percent_mas = values[0]['percent']
+            percent_fem = values[1]['percent']
+            output_results.append({'label': "Mas_De", 'percent': percent_mas})
+            output_results.append({'label': "Fem_De", 'percent': percent_fem})
+        else:
+            output_results.extend(values)
+
+    return output_results

@@ -3,8 +3,6 @@ import webbrowser
 from tkinter import filedialog
 
 import customtkinter as ctk
-from backend.predict.text.predict import predict as predict_text
-from backend.predict.img.predict import predict as predict_image
 
 
 class PredictFrame(ctk.CTkFrame):
@@ -154,13 +152,7 @@ class PredictFrame(ctk.CTkFrame):
                        ["Intro", "Extro"], ["Fem_S", "Mas_S"],
                        ["Fem_De", "Mas_De"]]
 
-        results = {}
-
-        if self.method == "selfie":
-            results = predict_image(self.data)
-        elif self.method == "link":
-            results = predict_text(self.data)
-
+        results = self.data
         categories = []
         values = []
 
