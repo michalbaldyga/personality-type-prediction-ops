@@ -2,6 +2,7 @@ import customtkinter as ctk
 from PIL import Image
 from predict_frame import PredictFrame
 from backend.predict.get_transcript_from_url import get_transcript
+from backend.predict.text.predict import predict
 
 
 class LinkFrame(ctk.CTkFrame):
@@ -66,12 +67,13 @@ class LinkFrame(ctk.CTkFrame):
 
                 # Hide the current frame
                 self.pack_forget()
+                prediction_results = predict(transcript)
 
                 # Open the PredictFrame
-                self.predict_frame = PredictFrame(self.master, show_link_frame, method, transcript)
+                self.predict_frame = PredictFrame(self.master, show_link_frame, method, prediction_results)
                 self.predict_frame.pack_propagate(False)
                 self.predict_frame.pack(pady=(50, 10))
-            except Exception:
-                print("An error occured in prediction")
+            except Exception as e:
+                print("An error occured in prediction: " + e)
         else:
             print("No YouTube link provided")

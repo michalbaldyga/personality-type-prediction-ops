@@ -2,7 +2,7 @@ import os
 
 from transformers import pipeline
 
-MODEL_DIR = "../../backend/release/"
+MODEL_DIR = "../../backend/release/text/"
 COINS = ["Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences",
          "Letter_Observer", "Letter_Decider",
          "Animal_Energy Animal", "Animal_Info Animal", "Animal_Dominant Animal", "Animal_Introverted vs Extraverted",
