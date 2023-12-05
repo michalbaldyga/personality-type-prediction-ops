@@ -4,7 +4,7 @@ import customtkinter as ctk
 from PIL import Image
 from predict_frame import PredictFrame
 
-from backend.predict.img.predict import predict
+#from backend.predict.img.predict import predict
 
 
 class SelfieFrame(ctk.CTkFrame):
@@ -95,10 +95,10 @@ class SelfieFrame(ctk.CTkFrame):
 
             # Hide the current frame
             self.pack_forget()
-            prediction_results = predict(self.selected_image)
+            #prediction_results = predict(self.selected_image)
 
             # Open the PredictFrame
-            self.predict_frame = PredictFrame(self.master, show_selfie_frame, method, prediction_results)
+            self.predict_frame = PredictFrame(self.master, show_selfie_frame, method, None)
             self.predict_frame.pack_propagate(False)
             self.predict_frame.pack(pady=(50, 10))
         else:

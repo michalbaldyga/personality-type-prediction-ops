@@ -2,7 +2,7 @@ import os
 
 from transformers import pipeline
 
-MODEL_DIR = "../../release/"
+MODEL_DIR = "../../backend/release/"
 COINS = ["Human Needs_Observer", "Human Needs_Decider", "Human Needs_Preferences",
          "Letter_Observer", "Letter_Decider",
          "Animal_Energy Animal", "Animal_Info Animal", "Animal_Dominant Animal", "Animal_Introverted vs Extraverted",
@@ -14,14 +14,14 @@ def _get_path_to_model(coin: str) -> str:
     return os.path.join(MODEL_DIR, model_name)
 
 
-def predict(text: str) -> dict:
+def predict(text: str) -> list:
     """Generate sentiment predictions for a given text across multiple ops coins.
 
     This function utilizes a text classification model for sentiment analysis on text.
     It predicts the sentiment for each specified coin and returns the results in a dictionary.
 
     :param text: str, the input text for sentiment analysis.
-    :return: dict, a dictionary containing sentiment predictions for each specified coin.
+    :return: list, a list containing sentiment predictions for each specified coin.
     """
     predictions_dict = {}
     for coin in COINS:
@@ -56,5 +56,29 @@ def predict(text: str) -> dict:
             predictions_dict[coin] = []
             for prediction in best_predictions:
                 predictions_dict[coin].append({"label": str(prediction[0]),
-                                               "percent": f"{round((prediction[1] / score) * 100, 1)}%"})
-    return predictions_dict
+                                               "percent": f"{round((prediction[1] / score) * 100, 1)}"})
+
+    print(__convert_results_to_proper_format(predictions_dict))
+    return __convert_results_to_proper_format(predictions_dict)
+
+
+def __convert_results_to_proper_format(input_results):
+    output_results = []
+
+    for coin in input_results:
+        values = input_results[coin]
+
+        if coin == "Sexual Modality_Sensory":
+            percent_mas = values[0]['percent']
+            percent_fem = values[1]['percent']
+            output_results.append({'label': "Mas_S", 'percent': percent_mas})
+            output_results.append({'label': "Fem_S", 'percent': percent_fem})
+        elif coin == "Sexual Modality_Extraverted Decider":
+            percent_mas = values[0]['percent']
+            percent_fem = values[1]['percent']
+            output_results.append({'label': "Mas_De", 'percent': percent_mas})
+            output_results.append({'label': "Fem_De", 'percent': percent_fem})
+        else:
+            output_results.extend(values)
+
+    return output_results
