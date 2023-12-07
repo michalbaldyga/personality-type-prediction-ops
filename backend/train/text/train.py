@@ -4,6 +4,7 @@ import evaluate
 import numpy as np
 import pandas as pd
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding, Trainer, TrainingArguments
+from tqdm import tqdm
 
 from datasets import ClassLabel, Dataset
 
@@ -74,6 +75,11 @@ epochs = [3, 5, 7]
 batch_sizes = [16, 32]
 weight_decays = [0.01, 0.001]
 
+total_iterations = len(COINS) * len(learning_rates) * len(epochs) * len(batch_sizes) * len(weight_decays)
+
+progress_bar = tqdm(total=total_iterations, desc="Training Models")
+
+
 
 for coin in COINS:
     best_model = None
@@ -139,8 +145,7 @@ for coin in COINS:
                     trainer.train()
                     print(f"Training done for {coin}")
 
-                    trainer.save_model(model_output_dir)
-                    print(f"{coin}_model saved")
+                    progress_bar.update(1)
 
                     # Evaluate the model
                     eval_result = trainer.evaluate()
