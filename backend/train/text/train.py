@@ -3,8 +3,9 @@ import os
 import evaluate
 import numpy as np
 import pandas as pd
-from datasets import ClassLabel, Dataset
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding, Trainer, TrainingArguments
+
+from datasets import ClassLabel, Dataset
 
 CSV_DIR = "../../../static/csv/"
 CSV_WITH_COINS = os.path.join(CSV_DIR, "records_cleaned_processed.csv")
@@ -64,6 +65,8 @@ def preprocess_coins_dataframe(df: pd.DataFrame, column_name: str) -> pd.DataFra
 df_coins = pd.read_csv(CSV_WITH_COINS, delimiter=",")
 df_transcripts = pd.read_csv(CSV_WITH_TRANSCRIPTS, delimiter="|")
 
+final_accuracies = {}
+
 for coin in COINS:
     df_coin = df_coins[["name", coin]]
     merged_df = pd.merge(df_coin, df_transcripts, on="name", how="inner")
@@ -89,7 +92,7 @@ for coin in COINS:
     accuracy = evaluate.load("accuracy")
 
     # Train
-    model_output_dir = f"../../release/model_{coin}"
+    model_output_dir = f"../release/model_{coin}"
     model = AutoModelForSequenceClassification.from_pretrained(
         "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id,
     )
@@ -99,7 +102,7 @@ for coin in COINS:
         learning_rate=2e-5,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
-        num_train_epochs=5,
+        num_train_epochs=10,
         weight_decay=0.01,
         evaluation_strategy="epoch",
         save_strategy="epoch",
@@ -123,3 +126,14 @@ for coin in COINS:
 
     trainer.save_model(model_output_dir)
     print(f"{coin}_model saved")
+
+    # Evaluate the model
+    eval_result = trainer.evaluate()
+    final_accuracy = eval_result["eval_accuracy"]
+    final_accuracies[coin] = final_accuracy
+    print(f"Final accuracy for {coin}: {final_accuracy:.4f}")
+
+# Print final accuracies for all models
+print("\nFinal Accuracies for All Models:")
+for coin, accuracy in final_accuracies.items():
+    print(f"{coin}: {accuracy:.4f}")
