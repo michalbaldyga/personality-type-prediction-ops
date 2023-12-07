@@ -3,10 +3,9 @@ import os
 import evaluate
 import numpy as np
 import pandas as pd
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding, Trainer, TrainingArguments
-from tqdm import tqdm
-
 from datasets import ClassLabel, Dataset
+from tqdm import tqdm
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding, Trainer, TrainingArguments
 
 CSV_DIR = "../../../static/csv/"
 CSV_WITH_COINS = os.path.join(CSV_DIR, "records_cleaned_processed.csv")
@@ -78,7 +77,6 @@ weight_decays = [0.01, 0.001]
 total_iterations = len(COINS) * len(learning_rates) * len(epochs) * len(batch_sizes) * len(weight_decays)
 
 progress_bar = tqdm(total=total_iterations, desc="Training Models")
-
 
 
 for coin in COINS:
@@ -159,10 +157,10 @@ for coin in COINS:
                             "learning_rate": lr,
                             "num_train_epochs": epoch,
                             "per_device_train_batch_size": batch_size,
-                            "weight_decay": weight_decay
+                            "weight_decay": weight_decay,
                         }
 
-	# After all iterations
+    # After all iterations
     print(f"Best model achieved an accuracy of: {best_accuracy:.4f}")
     print(f"Best Hyperparameters: {best_hyperparams}")
     final_accuracies[coin] = best_accuracy
