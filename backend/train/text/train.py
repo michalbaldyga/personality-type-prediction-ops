@@ -112,7 +112,7 @@ for coin in COINS:
                     accuracy = evaluate.load("accuracy")
 
                     # Train
-                    model_output_dir = f"../release/model_{coin}"
+                    model_output_dir = f"../release/text/model_{coin}"
                     model = AutoModelForSequenceClassification.from_pretrained(
                         "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id,
                     )
@@ -168,7 +168,7 @@ for coin in COINS:
 
     # Now save the best model
     if best_model:
-        best_model_output_dir = f"../release/best_model_{coin}"
+        best_model_output_dir = f"../release/text/best_model_{coin}"
         best_model.save_pretrained(best_model_output_dir)
 
 # Print final accuracies for all models
