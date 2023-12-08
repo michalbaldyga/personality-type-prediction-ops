@@ -4,6 +4,7 @@ import evaluate
 import numpy as np
 import pandas as pd
 from datasets import ClassLabel, Dataset
+from tqdm import tqdm
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, DataCollatorWithPadding, Trainer, TrainingArguments
 
 CSV_DIR = "../../../static/csv/"
@@ -64,62 +65,113 @@ def preprocess_coins_dataframe(df: pd.DataFrame, column_name: str) -> pd.DataFra
 df_coins = pd.read_csv(CSV_WITH_COINS, delimiter=",")
 df_transcripts = pd.read_csv(CSV_WITH_TRANSCRIPTS, delimiter="|")
 
+final_accuracies = {}
+final_hyperparams = {}
+
+# Example of different hyperparameters to experiment with
+learning_rates = [2e-5, 3e-5, 5e-5]
+epochs = [3, 5, 7]
+batch_sizes = [16, 32]
+weight_decays = [0.01, 0.001]
+
+total_iterations = len(COINS) * len(learning_rates) * len(epochs) * len(batch_sizes) * len(weight_decays)
+
+progress_bar = tqdm(total=total_iterations, desc="Training Models")
+
+
 for coin in COINS:
-    df_coin = df_coins[["name", coin]]
-    merged_df = pd.merge(df_coin, df_transcripts, on="name", how="inner")
-    df_cleaned = preprocess_coins_dataframe(merged_df, coin)
+    best_model = None
+    best_accuracy = -1
+    best_hyperparams = {}
 
-    data_dict = {"label": list(df_cleaned[coin]),
-                 "text": list(df_cleaned["transcript"])}
+    for lr in learning_rates:
+        for epoch in epochs:
+            for batch_size in batch_sizes:
+                for weight_decay in weight_decays:
+                    df_coin = df_coins[["name", coin]]
+                    merged_df = pd.merge(df_coin, df_transcripts, on="name", how="inner")
+                    df_cleaned = preprocess_coins_dataframe(merged_df, coin)
 
-    # Load current batch and labels
-    dataset_batch = Dataset.from_dict(data_dict)
-    dataset_batch = dataset_batch.train_test_split(test_size=0.2)
+                    data_dict = {"label": list(df_cleaned[coin]),
+                                 "text": list(df_cleaned["transcript"])}
 
-    labels = ClassLabel(names=[COINS[coin][0], COINS[coin][1]])
-    id2label = {0: COINS[coin][0], 1: COINS[coin][1]}
-    label2id = {COINS[coin][0]: 0, COINS[coin][1]: 1}
+                    # Load current batch and labels
+                    dataset_batch = Dataset.from_dict(data_dict)
+                    dataset_batch = dataset_batch.train_test_split(test_size=0.2)
 
-    # Preprocess
-    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
-    tokenized_dataset = dataset_batch.map(preprocess_function, batched=True)
-    data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding=True)
+                    labels = ClassLabel(names=[COINS[coin][0], COINS[coin][1]])
+                    id2label = {0: COINS[coin][0], 1: COINS[coin][1]}
+                    label2id = {COINS[coin][0]: 0, COINS[coin][1]: 1}
 
-    # Evaluation metric
-    accuracy = evaluate.load("accuracy")
+                    # Preprocess
+                    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+                    tokenized_dataset = dataset_batch.map(preprocess_function, batched=True)
+                    data_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding=True)
 
-    # Train
-    model_output_dir = f"../../release/model_{coin}"
-    model = AutoModelForSequenceClassification.from_pretrained(
-        "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id,
-    )
+                    # Evaluation metric
+                    accuracy = evaluate.load("accuracy")
 
-    training_args = TrainingArguments(
-        output_dir=model_output_dir,
-        learning_rate=2e-5,
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
-        num_train_epochs=5,
-        weight_decay=0.01,
-        evaluation_strategy="epoch",
-        save_strategy="epoch",
-        load_best_model_at_end=True,
-        push_to_hub=False,
-    )
+                    # Train
+                    model_output_dir = f"../release/text/model_{coin}"
+                    model = AutoModelForSequenceClassification.from_pretrained(
+                        "distilbert-base-uncased", num_labels=2, id2label=id2label, label2id=label2id,
+                    )
+                    training_args = TrainingArguments(
+                        output_dir=model_output_dir,
+                        learning_rate=lr,
+                        per_device_train_batch_size=batch_size,
+                        per_device_eval_batch_size=batch_size,
+                        num_train_epochs=epoch,
+                        weight_decay=weight_decay,
+                        evaluation_strategy="epoch",
+                        save_strategy="epoch",
+                        load_best_model_at_end=True,
+                        push_to_hub=False,
+                    )
+                    trainer = Trainer(
+                        model=model,
+                        args=training_args,
+                        train_dataset=tokenized_dataset["train"],
+                        eval_dataset=tokenized_dataset["test"],
+                        tokenizer=tokenizer,
+                        data_collator=data_collator,
+                        compute_metrics=compute_metrics,
+                    )
 
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=tokenized_dataset["train"],
-        eval_dataset=tokenized_dataset["test"],
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        compute_metrics=compute_metrics,
-    )
+                    # Train the model with the current set of hyperparameters
+                    print(f"Training with lr: {lr}, epoch: {epoch}, batch_size: {batch_size}, weight_decay: {weight_decay}")
+                    trainer.train()
+                    print(f"Training done for {coin}")
 
-    print(f"Start training for {coin}")
-    trainer.train()
-    print(f"Training done for {coin}")
+                    progress_bar.update(1)
 
-    trainer.save_model(model_output_dir)
-    print(f"{coin}_model saved")
+                    # Evaluate the model
+                    eval_result = trainer.evaluate()
+                    current_accuracy = eval_result["eval_accuracy"]
+
+                    # Update the best model if current is better
+                    if current_accuracy > best_accuracy:
+                        best_accuracy = current_accuracy
+                        best_model = model
+                        best_hyperparams = {
+                            "learning_rate": lr,
+                            "num_train_epochs": epoch,
+                            "per_device_train_batch_size": batch_size,
+                            "weight_decay": weight_decay,
+                        }
+
+    # After all iterations
+    print(f"Best model achieved an accuracy of: {best_accuracy:.4f}")
+    print(f"Best Hyperparameters: {best_hyperparams}")
+    final_accuracies[coin] = best_accuracy
+    final_hyperparams[coin] = best_hyperparams
+
+    # Now save the best model
+    if best_model:
+        best_model_output_dir = f"../release/text/best_model_{coin}"
+        best_model.save_pretrained(best_model_output_dir)
+
+# Print final accuracies for all models
+print("\nFinal Accuracies for All Models:")
+for coin, accuracy in final_accuracies.items():
+    print(f"{coin}: {accuracy:.4f}")
