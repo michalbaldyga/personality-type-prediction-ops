@@ -4,7 +4,7 @@ This project involves training deep learning models to predict personality types
 
 ## Overview
 
-The script sets up TensorFlow's mixed precision policy for efficient training on GPU, prepares the data for training using image augmentation, balances the dataset using SMOTE, and trains a model for each classification category using KFold cross-validation.
+The script sets up TensorFlow's mixed precision policy for efficient training on GPU, prepares the data for training using image augmentation, balances the dataset using under sampling, and trains a model for each classification category using KFold cross-validation.
 
 ## Prerequisites
 
