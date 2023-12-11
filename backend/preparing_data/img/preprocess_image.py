@@ -13,6 +13,7 @@ ORIGINAL_DIRECTORY = os.path.join(STATIC_IMG_DIR, "original")
 RESIZED_DIRECTORY = os.path.join(STATIC_IMG_DIR, "resized")
 CORRECTED_DIRECTORY = os.path.join(STATIC_IMG_DIR, "corrected_and_cropped")
 NO_FACE_DIRECTORY = os.path.join(STATIC_IMG_DIR, "no_face")
+INPUT = os.path.join(STATIC_IMG_DIR, "input")
 
 # Initialize MediaPipe FaceMesh.
 mp_face_mesh = mp.solutions.face_mesh
@@ -99,32 +100,59 @@ def correct_orientation_and_crop(_image: np.ndarray, _filename: str, corrected_d
         utils.save_image(_image, _filename, no_face_directory)
 
 
-def draw_landmarks_on_images(directory: str) -> None:
-    """Draw facial landmarks on images in a specified directory.
+def draw_major_features_with_red_eyes_on_images(directory: str) -> None:
+    """Draw major facial landmarks on images in a specified directory, with specific landmarks for eyes marked in red.
 
     :param directory: str, directory containing images to process.
     """
-    mp_drawing = mp.solutions.drawing_utils
+    # Define drawing specifications for general landmarks
     drawing_spec = mp.solutions.drawing_utils.DrawingSpec(thickness=1, circle_radius=1, color=(0, 255, 0))
+    # Define drawing specifications for the eyes in red
+    eye_drawing_spec = mp.solutions.drawing_utils.DrawingSpec(thickness=2, circle_radius=2, color=(0, 0, 255))
+
+    # Define the major features to draw (excluding eyes)
+    major_features = [mp_face_mesh.FACEMESH_LIPS,
+                      mp_face_mesh.FACEMESH_NOSE]
+
     for _filename in os.listdir(directory):
         if _filename.lower().endswith((".png", ".jpg", ".jpeg")):
-            _file_path = os.path.join(directory, filename)
-            _image = cv2.imread(file_path)
+            _file_path = os.path.join(directory, _filename)
+            _image = cv2.imread(_file_path)
             if _image is None:
                 continue
+
             results = face_mesh.process(cv2.cvtColor(_image, cv2.COLOR_BGR2RGB))
             if results.multi_face_landmarks:
                 for face_landmarks in results.multi_face_landmarks:
-                    mp_drawing.draw_landmarks(
-                        image=_image,
-                        landmark_list=face_landmarks,
-                        connections=mp_face_mesh.FACEMESH_TESSELATION,
-                        landmark_drawing_spec=drawing_spec,
-                        connection_drawing_spec=drawing_spec)
+                    # Draw major features
+                    for feature in major_features:
+                        mp.solutions.drawing_utils.draw_landmarks(
+                            image=_image,
+                            landmark_list=face_landmarks,
+                            connections=feature,
+                            landmark_drawing_spec=drawing_spec,
+                            connection_drawing_spec=drawing_spec)
+
+                    # Draw the specific landmarks for the left and right eyes in red
+                    left_eye_landmark = face_landmarks.landmark[130]
+                    cv2.circle(_image,
+                               (int(left_eye_landmark.x * _image.shape[1]),
+                                int(left_eye_landmark.y * _image.shape[0])),
+                               eye_drawing_spec.circle_radius,
+                               eye_drawing_spec.color,
+                               eye_drawing_spec.thickness)
+
+                    right_eye_landmark = face_landmarks.landmark[359]
+                    cv2.circle(_image,
+                               (int(right_eye_landmark.x * _image.shape[1]),
+                                int(right_eye_landmark.y * _image.shape[0])),
+                               eye_drawing_spec.circle_radius,
+                               eye_drawing_spec.color,
+                               eye_drawing_spec.thickness)
 
             # Save the modified image
-            cv2.imwrite(os.path.join(directory, "landmarked_" + _filename), _image)
-            print(f"Processed and saved landmarks on {_filename}")
+            cv2.imwrite(os.path.join(directory, "major_features_red_eyes_" + _filename), _image)
+            print(f"Processed and saved with major features and red eye landmarks on {_filename}")
 
 
 for filename in os.listdir(ORIGINAL_DIRECTORY):
@@ -156,3 +184,6 @@ for filename in os.listdir(ORIGINAL_DIRECTORY):
                 continue
 
 face_mesh.close()
+
+
+
