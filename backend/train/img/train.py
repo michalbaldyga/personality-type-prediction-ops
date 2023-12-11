@@ -4,8 +4,8 @@ import os
 import pandas as pd
 import tensorflow as tf
 from keras.applications import ResNet50
-from keras.callbacks import ModelCheckpoint, EarlyStopping
-from keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
@@ -58,22 +58,20 @@ def preprocess_coins_dataframe(df: pd.DataFrame, column_name: str) -> pd.DataFra
 
 
 def calculate_layers_to_freeze(num_samples, total_layers=165):
-    """
-    Calculate the number of layers to freeze based on the number of samples.
+    """Calculate the number of layers to freeze based on the number of samples.
 
     :param num_samples: int, number of samples in the dataset.
     :param total_layers: int, total number of layers in the base model.
     :return: int, number of layers to freeze.
     """
-    if num_samples < 1000:
+    lower_limit = 1000
+    if num_samples < lower_limit:
         return total_layers - 10
-    elif num_samples <= 1700:
-        return total_layers - 30
+    return total_layers - 30
 
 
 def create_model(train_base_model=False, num_layers_to_freeze=None):
-    """
-    Creates a deep learning model based on the ResNet50 architecture with modifications for binary classification.
+    """Creates a deep learning model based on the ResNet50 architecture with modifications for binary classification.
 
     :param train_base_model: bool, if True, the base model is trained, otherwise, it's set as non-trainable.
     :param num_layers_to_freeze: int, number of layers from the top to freeze. If None, default freezing logic is applied.
@@ -122,7 +120,7 @@ def main():
         width_shift_range=0.1,
         height_shift_range=0.1,
         horizontal_flip=True,
-        fill_mode='nearest'
+        fill_mode="nearest",
     )
 
     num_of_folds = 5
@@ -191,7 +189,7 @@ def main():
                 save_best_only=True,
                 mode="max")
 
-            early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+            early_stopping = EarlyStopping(monitor="val_loss", patience=5, restore_best_weights=True)
             model.fit(
                 train_generator,
                 steps_per_epoch=len(train_df) // 16,
@@ -202,10 +200,9 @@ def main():
             )
 
             # Fine-tuning phase
-
             model = create_model(
                 train_base_model=True,
-                num_layers_to_freeze=num_layers_to_freeze
+                num_layers_to_freeze=num_layers_to_freeze,
             )
             model.load_weights(checkpoint_path)
 
@@ -216,12 +213,13 @@ def main():
             # Recompile the model
             model.compile(optimizer=Adam(learning_rate=0.00001), loss="binary_crossentropy", metrics=["accuracy"])
 
-            early_stopping = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+            early_stopping = EarlyStopping(monitor="val_loss", patience=3, restore_best_weights=True)
+
             # Continue training (fine-tuning)
             model.fit(
                 train_generator,
                 steps_per_epoch=len(train_df) // 16,
-                epochs=5,  # Fewer epochs for fine-tuning
+                epochs=5,
                 validation_data=valid_generator,
                 validation_steps=len(valid_df) // 16,
                 callbacks=[checkpoint, early_stopping],

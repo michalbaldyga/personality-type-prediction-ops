@@ -22,7 +22,7 @@ def load_and_preprocess_image(img_path, target_size=(224, 224)):
     img = load_img(img_path, target_size=target_size)
     img_array = img_to_array(img)
     img_array = np.expand_dims(img_array, axis=0)
-    img_array /= 255.  # Rescale by 1/255
+    img_array /= 255.
     return img_array
 
 
@@ -38,6 +38,20 @@ def predict_with_model(model, img_path):
 
 
 def predict(image_url):
+    """Predict the classification for a given image using multiple trained models.
+
+        This function loads a series of trained models, each corresponding to a different coin type.
+        For each model, it predicts the probability that the image belongs to one of two classes
+        (e.g., heads or tails) defined in `CLASS_MAPPINGS`. The function then converts these
+        probabilities into a user-friendly percentage format and organizes them into a structured
+        dictionary, which is finally transformed into a desired output format.
+
+        :param image_url: str, the URL of the image to be classified. This image is passed to
+                          each model for prediction.
+        :return: A dictionary where keys are coin types and values are lists of dictionaries,
+                 each containing the label (class name) and its corresponding probability in
+                 percentage format.
+        """
     # Initialize an empty dictionary to store the results.
     results = {}
 
@@ -73,15 +87,15 @@ def __convert_results_to_proper_format(input_results):
         values = input_results[coin]
 
         if coin == "Sexual Modality_Sensory":
-            percent_mas = values[0]['percent']
-            percent_fem = values[1]['percent']
-            output_results.append({'label': "Mas_S", 'percent': percent_mas})
-            output_results.append({'label': "Fem_S", 'percent': percent_fem})
+            percent_mas = values[0]["percent"]
+            percent_fem = values[1]["percent"]
+            output_results.append({"label": "Mas_S", "percent": percent_mas})
+            output_results.append({"label": "Fem_S", "percent": percent_fem})
         elif coin == "Sexual Modality_Extraverted Decider":
-            percent_mas = values[0]['percent']
-            percent_fem = values[1]['percent']
-            output_results.append({'label': "Mas_De", 'percent': percent_mas})
-            output_results.append({'label': "Fem_De", 'percent': percent_fem})
+            percent_mas = values[0]["percent"]
+            percent_fem = values[1]["percent"]
+            output_results.append({"label": "Mas_De", "percent": percent_mas})
+            output_results.append({"label": "Fem_De", "percent": percent_fem})
         else:
             output_results.extend(values)
 
