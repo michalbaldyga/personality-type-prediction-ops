@@ -40,18 +40,18 @@ def predict_with_model(model, img_path):
 def predict(image_url):
     """Predict the classification for a given image using multiple trained models.
 
-        This function loads a series of trained models, each corresponding to a different coin type.
-        For each model, it predicts the probability that the image belongs to one of two classes
-        (e.g., heads or tails) defined in `CLASS_MAPPINGS`. The function then converts these
-        probabilities into a user-friendly percentage format and organizes them into a structured
-        dictionary, which is finally transformed into a desired output format.
+    This function loads a series of trained models, each corresponding to a different coin type.
+    For each model, it predicts the probability that the image belongs to one of two classes
+    (e.g., heads or tails) defined in `CLASS_MAPPINGS`. The function then converts these
+    probabilities into a user-friendly percentage format and organizes them into a structured
+    dictionary, which is finally transformed into a desired output format.
 
-        :param image_url: str, the URL of the image to be classified. This image is passed to
-                          each model for prediction.
-        :return: A dictionary where keys are coin types and values are lists of dictionaries,
-                 each containing the label (class name) and its corresponding probability in
-                 percentage format.
-        """
+    :param image_url: str, the URL of the image to be classified. This image is passed to
+                      each model for prediction.
+    :return: A dictionary where keys are coin types and values are lists of dictionaries,
+             each containing the label (class name) and its corresponding probability in
+             percentage format.
+    """
     # Initialize an empty dictionary to store the results.
     results = {}
 
