@@ -36,7 +36,7 @@ Ensure these libraries are installed before running scripts
 
 ## Usage
 
-To execute the scripts, navigate to directory containing these scripts and run python command, for example for get_interviews:
+To execute the scripts, navigate to directory containing these scripts and run python command, for example for get_interviews script:
 
 ```bash
 python get_interviews.py
