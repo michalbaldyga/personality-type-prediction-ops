@@ -1,10 +1,10 @@
 # Gathering Data Scripts
 
-This directory contains scripts for gathering data from SubjectivePersonalities and YouTube. These scripts get persons with their OPS types, images, interviews.
+This directory contains scripts for gathering data from SubjectivePersonality and YouTube. These scripts get persons with their OPS types, images, interviews.
 
 ## Overview
 
-Scripts get data from SubjectivePersonalities (person name, OPS type, image), search for interviews and process them using diarization and transcription.
+Scripts get data from SubjectivePersonality (person name, OPS type, image), search for interviews and process them using diarization and transcription.
 
 ## Prerequisites
 
